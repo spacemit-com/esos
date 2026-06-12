@@ -182,7 +182,7 @@
 		compatible = "regulator-is6615a-2";
 		regulator-name = "edcdc2";
 		regulator-min-microvolt = <534000>;
-		regulator-max-microvolt = <1005000>;
+		regulator-max-microvolt = <1100000>;
 		vin-supply = <&pwren_a100>;
 		index = <22>;
 	};
@@ -194,7 +194,7 @@
 		compatible = "regulator-is6615a-1";
 		regulator-name = "edcdc1";
 		regulator-min-microvolt = <534000>;
-		regulator-max-microvolt = <1005000>;
+		regulator-max-microvolt = <1100000>;
 		vin-supply = <&pwren_x100>;
 		index = <23>;
 	};
