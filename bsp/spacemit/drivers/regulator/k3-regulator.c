@@ -29,15 +29,15 @@ static struct regulator_linear_range is6608_buck_ranges[] = {
 };
 
 static struct regulator_linear_range tda38740_buck_ranges[] = {
-	[0] = REGULATOR_LINEAR_RANGE(531216, 0x88, 0x101, 3906),
+	[0] = REGULATOR_LINEAR_RANGE(531216, 0x88, 0x11a, 3906),
 };
 
 static struct regulator_linear_range is6615a_buck_ranges[] = {
-	[0] = REGULATOR_LINEAR_RANGE(531216, 0x110, 0x202, 1953),
+	[0] = REGULATOR_LINEAR_RANGE(531216, 0x110, 0x234, 1953),
 };
 
 static struct regulator_linear_range au4562_buck_ranges[] = {
-	[0] = REGULATOR_LINEAR_RANGE(540000, 0x6c, 0xc8, 5000),
+	[0] = REGULATOR_LINEAR_RANGE(540000, 0x6c, 0xdc, 5000),
 };
 
 static const struct regulator_desc p1_regulator_descs[]  = {
