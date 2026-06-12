@@ -1,0 +1,137 @@
+/*
+ * Copyright (c) 2022-2025, Spacemit
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/dts-v1/;
+
+#include "../../../k3.dtsi"
+#include "../../../k3-pinctrl.dtsi"
+
+/ {
+	model = "k3_com260_ifx_tq";
+};
+
+&cpu_0 {
+	reg = <1>;
+	cpu_frequency = <614400000>;
+	clocks = <&ccu CLK_RCPU_RT24_CORE1>;
+};
+
+&pinctrl {
+	status = "okay";
+};
+
+&gpio {
+	status = "disabled";
+};
+
+&r_gpio {
+	status = "disabled";
+};
+
+&uart0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&ruart0_3_cfg>;
+	status = "okay";
+	reg = <0xc0881000 0x100>;
+	interrupts = <0 17 0>;
+	clocks = <&ccu CLK_RCPU_UART0>, <&ccu CLK_RST_RCPU_UART0>;
+};
+
+&rspi0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&rssp0_0_cfg>;
+
+	status = "okay";
+};
+
+&rdma {
+	status = "disabled";
+};
+
+&ri2c0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&ri2c0_3_cfg>;
+	status = "disabled";
+};
+
+&ri2c1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&ri2c1_1_cfg>;
+	status = "disabled";
+};
+
+&mailbox3 {
+	status = "disabled";
+};
+
+&mailbox4 {
+	status = "okay";
+};
+
+&mailbox5 {
+	status = "disabled";
+};
+
+&mailbox6 {
+	status = "disabled";
+};
+
+&mailbox7 {
+	interrupts = <0 66 0>;
+	status = "okay";
+};
+
+&rproc {
+	status = "okay";
+	shared_mem_pa_base = <0x0 0xc086c000>;
+	shared_mem_buf_offset = <0x40498000>;
+	shared_mem_size	= <0x40594000>;
+	mboxes = <&mailbox4 0>, <&mailbox4 1>;
+};
+
+&rslpm {
+	mbox-names = "rx", "tx";
+	mboxes = <&mailbox7 0>, <&mailbox7 1>;
+	status = "okay";
+};
+
+&rpmi {
+	shmem-base = <0x1 0xe00000>;
+	status = "disabled";
+};
+
+&rwdt {
+	reg = <0xc088c800 0x100>, <0xd4050000 0x1030>;
+	clocks = <&ccu CLK_RCPU_TIMER2>, <&ccu CLK_RST_RCPU_TIMER2>;
+};
+
+&eth0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&rgmac0_cfg>;
+	phy-reset-pin = <75>;
+	max-speed = <1000>;
+	clk-tuning-enable = <1>;
+	clk-tuning-by-delayline = <1>;
+	tx-phase = <51>;
+	rx-phase = <54>;
+	phy-mode = "rgmii";
+	phy-handle = <&rgmii>;
+
+	status = "okay";
+
+	mdio {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		rgmii: phy@0 {
+			reg = <0x1>;
+		};
+	};
+};
+
+&ec_master {
+	status = "okay";
+};

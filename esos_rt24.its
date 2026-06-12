@@ -411,6 +411,34 @@
 			};
 		};
 
+		rcpu0-dtb-com260_ifx_tq {
+			description = "ESOS Core0 COM260 ifx TQ dtb";
+			type = "standalone";
+			os = "esos";
+			arch = "riscv";
+			compression = "lzo";
+			load = <0x1 0xf01000>;
+			entry = <0x1 0xf01000>;
+			data = /incbin/("../output/esos/k3_rt240_com260_ifx_tq.dtb.lzo");
+			hash {
+				algo = "crc32";
+			};
+		};
+
+		rcpu1-dtb-com260_ifx_tq {
+			description = "ESOS Core1 COM260 ifx TQ dtb";
+			type = "standalone";
+			os = "esos";
+			arch = "riscv";
+			compression = "lzo";
+			load = <0x1 0xF0D800>;
+			entry = <0x1 0xF0D800>;
+			data = /incbin/("../output/esos/k3_rt241_com260_ifx_tq.dtb.lzo");
+			hash {
+				algo = "crc32";
+			};
+		};
+
 		rcpu0-fw {
 			description = "ESOS Core0";
 			type = "standalone";
@@ -513,6 +541,11 @@
 		conf_dual_14 {
 			description = "k3_com260_ifx2";
 			loadables = "rcpu-data-null", "rcpu0-dtb-com260_ifx2", "rcpu1-dtb-com260_ifx2", "rcpu0-fw", "rcpu1-fw";
+		};
+
+		conf_dual_15 {
+			description = "k3_com260_ifx_tq";
+			loadables = "rcpu-data-null", "rcpu0-dtb-com260_ifx_tq", "rcpu1-dtb-com260_ifx_tq", "rcpu0-fw", "rcpu1-fw";
 		};
 	};
 };
