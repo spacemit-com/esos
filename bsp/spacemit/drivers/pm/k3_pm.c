@@ -15,10 +15,12 @@
 static rt_sem_t rt_lowpwrsem;
 static rt_thread_t rt_lowpwrtid;
 static rt_device_t lpmdev;
+static int pm_enter_flag;
 static struct mbox_client lpm_tx_client, lpm_rx_client;
 static struct mbox_chan *lpm_tx_chan, *lpm_rx_chan;
 
 extern unsigned long __esos_lite_start[], __esos_lite_end[];
+extern void rt_system_power_manager(void);
 
 static int __suspend_asm_finish(rt_ubase_t arg, rt_ubase_t entry, rt_ubase_t context)
 {
@@ -235,7 +237,8 @@ static rt_tick_t pm_timer_get_tick(struct rt_pm *pm)
 
 static void rt_lowpwr_rx_callback(struct mbox_client *cl, void *data)
 {
-	rt_pm_release(RT_PM_DEFAULT_SLEEP_MODE);
+	pm_enter_flag = 1;
+	rt_sem_release(rt_lowpwrsem);
 }
 
 static void rt_lowpwr_poll(void *priv)
@@ -245,9 +248,15 @@ static void rt_lowpwr_poll(void *priv)
 	while (1) {
 		rt_sem_take(rt_lowpwrsem, RT_WAITING_FOREVER);
 
-		/* tell rcpu0 that i has been waked up*/
-		mbox_send_message(lpm_tx_chan, &val);
-		mbox_chan_txdone(lpm_tx_chan, 0);
+		if (pm_enter_flag == 1) {
+			pm_enter_flag = 0;
+			rt_pm_release(RT_PM_DEFAULT_SLEEP_MODE);
+			rt_system_power_manager();
+		} else {
+			/* tell rcpu0 that i has been waked up*/
+			mbox_send_message(lpm_tx_chan, &val);
+			mbox_chan_txdone(lpm_tx_chan, 0);
+		}
 	}
 }
 
