@@ -150,8 +150,8 @@ typedef volatile union rt24_core0_idle_cfg_reg {
 
 #define APCR_PER_VETE_REG              (0xd4050000 + 0x1098)
 
-#define RT_HEAP_START          0x100B04000
-#define RT_HEAP_END            0x100D04000
+#define RT_HEAP_START		0x100a00000
+#define RT_HEAP_END		0x100c00000
 #define SHARED_MEM_PA		0x30200000
 
 #define RT24_CORE0_SW_WAKEUP_REG	(0xc088c0d4)
@@ -168,10 +168,10 @@ typedef volatile union rt24_core0_idle_cfg_reg {
 #define AP_C0_M2_EXIT_INT_NUM		(84)
 #define AWUCRM_REG			(0xd4050000 + 0x104c)
 
-#define DTB_TABLE_BASE_ADDR		(0x100f01000)
+#define DTB_TABLE_BASE_ADDR		(0x100d01000)
 #define DTB_TABLE_STEP			(1024 * 50)
 
 /* ap & rt24 data interaction space */
-#define AR_DATA_INTERACTION_BASE	(0x100f00000)
+#define AR_DATA_INTERACTION_BASE	(0x100d00000)
 
 #endif

@@ -11,8 +11,8 @@
 			os = "esos";
 			arch = "riscv";
 			compression = "lzo";
-			load = <0x1 0xf00000>;
-			entry = <0x1 0xf00000>;
+			load = <0x1 0xd00000>;
+			entry = <0x1 0xd00000>;
 			data = /incbin/("../output/esos/null.spacemit.lzo");
 			hash {
 				algo = "crc32";
@@ -25,8 +25,8 @@
 			os = "esos";
 			arch = "riscv";
 			compression = "lzo";
-			load = <0x1 0xf01000>;
-			entry = <0x1 0xf01000>;
+			load = <0x1 0xd01000>;
+			entry = <0x1 0xd01000>;
 			data = /incbin/("../output/esos/k3_rt240_com260.dtb.lzo");
 			hash {
 				algo = "crc32";
@@ -39,8 +39,8 @@
 			os = "esos";
 			arch = "riscv";
 			compression = "lzo";
-			load = <0x1 0xF0D800>;
-			entry = <0x1 0xF0D800>;
+			load = <0x1 0xd0D800>;
+			entry = <0x1 0xd0D800>;
 			data = /incbin/("../output/esos/k3_rt241_com260.dtb.lzo");
 			hash {
 				algo = "crc32";
@@ -53,8 +53,8 @@
 			os = "esos";
 			arch = "riscv";
 			compression = "lzo";
-			load = <0x1 0xf01000>;
-			entry = <0x1 0xf01000>;
+			load = <0x1 0xd01000>;
+			entry = <0x1 0xd01000>;
 			data = /incbin/("../output/esos/k3_rt240_deb1.dtb.lzo");
 			hash {
 				algo = "crc32";
@@ -67,8 +67,8 @@
 			os = "esos";
 			arch = "riscv";
 			compression = "lzo";
-			load = <0x1 0xF0D800>;
-			entry = <0x1 0xF0D800>;
+			load = <0x1 0xd0D800>;
+			entry = <0x1 0xd0D800>;
 			data = /incbin/("../output/esos/k3_rt241_deb1.dtb.lzo");
 			hash {
 				algo = "crc32";
@@ -81,8 +81,8 @@
 			os = "esos";
 			arch = "riscv";
 			compression = "lzo";
-			load = <0x1 0xf01000>;
-			entry = <0x1 0xf01000>;
+			load = <0x1 0xd01000>;
+			entry = <0x1 0xd01000>;
 			data = /incbin/("../output/esos/k3_rt240_evb.dtb.lzo");
 			hash {
 				algo = "crc32";
@@ -95,8 +95,8 @@
 			os = "esos";
 			arch = "riscv";
 			compression = "lzo";
-			load = <0x1 0xF0D800>;
-			entry = <0x1 0xF0D800>;
+			load = <0x1 0xd0D800>;
+			entry = <0x1 0xd0D800>;
 			data = /incbin/("../output/esos/k3_rt241_evb.dtb.lzo");
 			hash {
 				algo = "crc32";
@@ -109,8 +109,8 @@
 			os = "esos";
 			arch = "riscv";
 			compression = "lzo";
-			load = <0x1 0xf01000>;
-			entry = <0x1 0xf01000>;
+			load = <0x1 0xd01000>;
+			entry = <0x1 0xd01000>;
 			data = /incbin/("../output/esos/k3_rt240_evb2_1.dtb.lzo");
 			hash {
 				algo = "crc32";
@@ -123,8 +123,8 @@
 			os = "esos";
 			arch = "riscv";
 			compression = "lzo";
-			load = <0x1 0xF0D800>;
-			entry = <0x1 0xF0D800>;
+			load = <0x1 0xd0D800>;
+			entry = <0x1 0xd0D800>;
 			data = /incbin/("../output/esos/k3_rt241_evb2_1.dtb.lzo");
 			hash {
 				algo = "crc32";
@@ -137,8 +137,8 @@
 			os = "esos";
 			arch = "riscv";
 			compression = "lzo";
-			load = <0x1 0xf01000>;
-			entry = <0x1 0xf01000>;
+			load = <0x1 0xd01000>;
+			entry = <0x1 0xd01000>;
 			data = /incbin/("../output/esos/k3_rt240_evb2_2.dtb.lzo");
 			hash {
 				algo = "crc32";
@@ -151,8 +151,8 @@
 			os = "esos";
 			arch = "riscv";
 			compression = "lzo";
-			load = <0x1 0xF0D800>;
-			entry = <0x1 0xF0D800>;
+			load = <0x1 0xd0D800>;
+			entry = <0x1 0xd0D800>;
 			data = /incbin/("../output/esos/k3_rt241_evb2_2.dtb.lzo");
 			hash {
 				algo = "crc32";
@@ -165,8 +165,8 @@
 			os = "esos";
 			arch = "riscv";
 			compression = "lzo";
-			load = <0x1 0xf01000>;
-			entry = <0x1 0xf01000>;
+			load = <0x1 0xd01000>;
+			entry = <0x1 0xd01000>;
 			data = /incbin/("../output/esos/k3_rt240_dc_fml13v05.dtb.lzo");
 			hash {
 				algo = "crc32";
@@ -179,8 +179,8 @@
 			os = "esos";
 			arch = "riscv";
 			compression = "lzo";
-			load = <0x1 0xF0D800>;
-			entry = <0x1 0xF0D800>;
+			load = <0x1 0xd0D800>;
+			entry = <0x1 0xd0D800>;
 			data = /incbin/("../output/esos/k3_rt241_dc_fml13v05.dtb.lzo");
 			hash {
 				algo = "crc32";
@@ -193,8 +193,8 @@
 			os = "esos";
 			arch = "riscv";
 			compression = "lzo";
-			load = <0x1 0xf01000>;
-			entry = <0x1 0xf01000>;
+			load = <0x1 0xd01000>;
+			entry = <0x1 0xd01000>;
 			data = /incbin/("../output/esos/k3_rt240_com260_kit_v02.dtb.lzo");
 			hash {
 				algo = "crc32";
@@ -207,8 +207,8 @@
 			os = "esos";
 			arch = "riscv";
 			compression = "lzo";
-			load = <0x1 0xF0D800>;
-			entry = <0x1 0xF0D800>;
+			load = <0x1 0xd0D800>;
+			entry = <0x1 0xd0D800>;
 			data = /incbin/("../output/esos/k3_rt241_com260_kit_v02.dtb.lzo");
 			hash {
 				algo = "crc32";
@@ -221,8 +221,8 @@
 			os = "esos";
 			arch = "riscv";
 			compression = "lzo";
-			load = <0x1 0xf01000>;
-			entry = <0x1 0xf01000>;
+			load = <0x1 0xd01000>;
+			entry = <0x1 0xd01000>;
 			data = /incbin/("../output/esos/k3_rt240_gemini_c0.dtb.lzo");
 			hash {
 				algo = "crc32";
@@ -235,8 +235,8 @@
 			os = "esos";
 			arch = "riscv";
 			compression = "lzo";
-			load = <0x1 0xF0D800>;
-			entry = <0x1 0xF0D800>;
+			load = <0x1 0xd0D800>;
+			entry = <0x1 0xd0D800>;
 			data = /incbin/("../output/esos/k3_rt241_gemini_c0.dtb.lzo");
 			hash {
 				algo = "crc32";
@@ -249,8 +249,8 @@
 			os = "esos";
 			arch = "riscv";
 			compression = "lzo";
-			load = <0x1 0xf01000>;
-			entry = <0x1 0xf01000>;
+			load = <0x1 0xd01000>;
+			entry = <0x1 0xd01000>;
 			data = /incbin/("../output/esos/k3_rt240_gemini_c1.dtb.lzo");
 			hash {
 				algo = "crc32";
@@ -263,8 +263,8 @@
 			os = "esos";
 			arch = "riscv";
 			compression = "lzo";
-			load = <0x1 0xF0D800>;
-			entry = <0x1 0xF0D800>;
+			load = <0x1 0xd0D800>;
+			entry = <0x1 0xd0D800>;
 			data = /incbin/("../output/esos/k3_rt241_gemini_c1.dtb.lzo");
 			hash {
 				algo = "crc32";
@@ -277,8 +277,8 @@
 			os = "esos";
 			arch = "riscv";
 			compression = "lzo";
-			load = <0x1 0xf01000>;
-			entry = <0x1 0xf01000>;
+			load = <0x1 0xd01000>;
+			entry = <0x1 0xd01000>;
 			data = /incbin/("../output/esos/k3_rt240_pico_itx.dtb.lzo");
 			hash {
 				algo = "crc32";
@@ -291,8 +291,8 @@
 			os = "esos";
 			arch = "riscv";
 			compression = "lzo";
-			load = <0x1 0xF0D800>;
-			entry = <0x1 0xF0D800>;
+			load = <0x1 0xd0D800>;
+			entry = <0x1 0xd0D800>;
 			data = /incbin/("../output/esos/k3_rt241_pico_itx.dtb.lzo");
 			hash {
 				algo = "crc32";
@@ -305,8 +305,8 @@
 			os = "esos";
 			arch = "riscv";
 			compression = "lzo";
-			load = <0x1 0xf01000>;
-			entry = <0x1 0xf01000>;
+			load = <0x1 0xd01000>;
+			entry = <0x1 0xd01000>;
 			data = /incbin/("../output/esos/k3_rt240_BS01DCMA.dtb.lzo");
 			hash {
 				algo = "crc32";
@@ -319,8 +319,8 @@
 			os = "esos";
 			arch = "riscv";
 			compression = "lzo";
-			load = <0x1 0xF0D800>;
-			entry = <0x1 0xF0D800>;
+			load = <0x1 0xd0D800>;
+			entry = <0x1 0xd0D800>;
 			data = /incbin/("../output/esos/k3_rt241_BS01DCMA.dtb.lzo");
 			hash {
 				algo = "crc32";
@@ -333,8 +333,8 @@
 			os = "esos";
 			arch = "riscv";
 			compression = "lzo";
-			load = <0x1 0xf01000>;
-			entry = <0x1 0xf01000>;
+			load = <0x1 0xd01000>;
+			entry = <0x1 0xd01000>;
 			data = /incbin/("../output/esos/k3_rt240_com260_ifx.dtb.lzo");
 			hash {
 				algo = "crc32";
@@ -347,8 +347,8 @@
 			os = "esos";
 			arch = "riscv";
 			compression = "lzo";
-			load = <0x1 0xF0D800>;
-			entry = <0x1 0xF0D800>;
+			load = <0x1 0xd0D800>;
+			entry = <0x1 0xd0D800>;
 			data = /incbin/("../output/esos/k3_rt241_com260_ifx.dtb.lzo");
 			hash {
 				algo = "crc32";
@@ -361,8 +361,8 @@
 			os = "esos";
 			arch = "riscv";
 			compression = "lzo";
-			load = <0x1 0xf01000>;
-			entry = <0x1 0xf01000>;
+			load = <0x1 0xd01000>;
+			entry = <0x1 0xd01000>;
 			data = /incbin/("../output/esos/k3_rt240_com260_tq.dtb.lzo");
 			hash {
 				algo = "crc32";
@@ -375,8 +375,8 @@
 			os = "esos";
 			arch = "riscv";
 			compression = "lzo";
-			load = <0x1 0xF0D800>;
-			entry = <0x1 0xF0D800>;
+			load = <0x1 0xd0D800>;
+			entry = <0x1 0xd0D800>;
 			data = /incbin/("../output/esos/k3_rt241_com260_tq.dtb.lzo");
 			hash {
 				algo = "crc32";
@@ -389,8 +389,8 @@
 			os = "esos";
 			arch = "riscv";
 			compression = "lzo";
-			load = <0x1 0xf01000>;
-			entry = <0x1 0xf01000>;
+			load = <0x1 0xd01000>;
+			entry = <0x1 0xd01000>;
 			data = /incbin/("../output/esos/k3_rt240_com260_ifx2.dtb.lzo");
 			hash {
 				algo = "crc32";
@@ -403,8 +403,8 @@
 			os = "esos";
 			arch = "riscv";
 			compression = "lzo";
-			load = <0x1 0xF0D800>;
-			entry = <0x1 0xF0D800>;
+			load = <0x1 0xd0D800>;
+			entry = <0x1 0xd0D800>;
 			data = /incbin/("../output/esos/k3_rt241_com260_ifx2.dtb.lzo");
 			hash {
 				algo = "crc32";
