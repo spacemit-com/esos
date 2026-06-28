@@ -7,6 +7,7 @@
 #include <rtthread.h>
 #include <rtdevice.h>
 #include <rthw.h>
+#include <strings.h>
 #include <riscv-ops.h>
 
 #define DRIVER_NAME                     "pinctrl-single"
