@@ -439,6 +439,34 @@
 			};
 		};
 
+		rcpu0-dtb-aibox-k3 {
+			description = "ESOS Core0 AIBOX-K3 dtb";
+			type = "standalone";
+			os = "esos";
+			arch = "riscv";
+			compression = "none";
+			load = <0x1 0xd01000>;
+			entry = <0x1 0xd01000>;
+			data = /incbin/("../output/esos/k3_rt240_firefly_aibox_k3.dtb");
+			hash {
+				algo = "crc32";
+			};
+		};
+
+		rcpu1-dtb-aibox-k3 {
+			description = "ESOS Core1 AIBOX-K3 dtb";
+			type = "standalone";
+			os = "esos";
+			arch = "riscv";
+			compression = "none";
+			load = <0x1 0xd0D800>;
+			entry = <0x1 0xd0D800>;
+			data = /incbin/("../output/esos/k3_rt241_firefly_aibox_k3.dtb");
+			hash {
+				algo = "crc32";
+			};
+		};
+
 		rcpu0-fw {
 			description = "ESOS Core0";
 			type = "standalone";
@@ -546,6 +574,11 @@
 		conf_dual_15 {
 			description = "k3_com260_ifx_tq";
 			loadables = "rcpu-data-null", "rcpu0-dtb-com260_ifx_tq", "rcpu1-dtb-com260_ifx_tq", "rcpu0-fw", "rcpu1-fw";
+		};
+
+		conf_dual_16 {
+			description = "k3-firefly-aibox-k3";
+			loadables = "rcpu-data-null", "rcpu0-dtb-aibox-k3", "rcpu1-dtb-aibox-k3", "rcpu0-fw", "rcpu1-fw";
 		};
 	};
 };
