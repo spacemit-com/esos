@@ -190,9 +190,11 @@ static rt_int32_t spacemit_rpmi_get_hsm_config(struct dtb_node *node, void *con,
 }
 
 /* system suspend releated */
-struct rpmi_system_suspend_type system_suspend_types[1] = {
+struct rpmi_system_suspend_type system_suspend_types[2] = {
 	{ .type = RPMI_SYSSUSP_TYPE_SUSPEND_TO_RAM,
-		.attr = RPMI_SYSSUSP_ATTRS_FLAGS_RESUMEADDR | RPMI_SYSSUSP_ATTRS_FLAGS_SUSPENDTYPE }
+		.attr = RPMI_SYSSUSP_ATTRS_FLAGS_RESUMEADDR | RPMI_SYSSUSP_ATTRS_FLAGS_SUSPENDTYPE },
+	{ .type = RPMI_SYSSUSP_TYPE_SUSPEND_TO_DISK,
+		.attr = RPMI_SYSSUSP_ATTRS_FLAGS_SUSPENDTYPE },
 };
 
 /* System suspend platform operations (stubs for hardware-related functions) */
@@ -283,7 +285,7 @@ static rt_int32_t spacemit_rpmi_register_hsm_service(void *con, struct rpmi_cont
 
 	if (config->support_syssup) {
 		/* create the system suspend services */
-		group = rpmi_service_group_syssusp_create(hsm, 1, system_suspend_types,
+		group = rpmi_service_group_syssusp_create(hsm, 2, system_suspend_types,
 				&syssusp_ops, config);
 		if (!group) {
 			rt_kprintf("ERROR: Failed to create System Suspend service group\n");
@@ -342,8 +344,16 @@ static void spacemit_multiple_os_poll(void *priv)
 		/* wait rcpu1 power down */
 		rt_sem_take(multiple_os_array->msem, RT_WAITING_FOREVER);
 
-		/* trigger the system suspend */
-		rt_pm_release(RT_PM_DEFAULT_SLEEP_MODE);
+		if (multiple_os_array->hibernate_pending) {
+			multiple_os_array->hibernate_pending = 0;
+			/* trigger PM_SLEEP_MODE_SHUTDOWN so RCPU0 goes suspend to disk */
+			rt_pm_request(PM_SLEEP_MODE_SHUTDOWN);
+			rt_pm_release(RT_PM_DEFAULT_DEEPSLEEP_MODE);
+			rt_pm_release(RT_PM_DEFAULT_SLEEP_MODE);
+		} else {
+			/* trigger the system suspend (STR) */
+			rt_pm_release(RT_PM_DEFAULT_SLEEP_MODE);
+		}
 
 		/* will enter idle thread */
 		rt_sem_take((rt_sem_t)multiple_os_array->dev.user_data, RT_WAITING_FOREVER);
@@ -385,7 +395,6 @@ static void spacemit_multiple_os_poll(void *priv)
 			/* send the wakeup event to other os */
 			rt_sem_release(config->hsm[i]->cmwk_sem);
 		}
-
 	}
 }
 

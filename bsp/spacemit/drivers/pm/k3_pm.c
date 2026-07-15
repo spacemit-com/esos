@@ -11,6 +11,7 @@
 #include <riscv-plic.h>
 #include <spacemit_sdk_soc.h>
 #include <register_defination.h>
+#include "../rpmi/k3/k3_hsm.h"
 
 static rt_sem_t rt_lowpwrsem;
 static rt_thread_t rt_lowpwrtid;
@@ -22,52 +23,116 @@ static struct mbox_chan *lpm_tx_chan, *lpm_rx_chan;
 extern unsigned long __esos_lite_start[], __esos_lite_end[];
 extern void rt_system_power_manager(void);
 
+static void __core1_enter_wfi(rt_ubase_t entry)
+{
+	unsigned int val;
+
+	/* tell rcpu0 that i will power down */
+	mbox_send_message(lpm_tx_chan, &val);
+	mbox_chan_txdone(lpm_tx_chan, 0);
+
+	writel(entry & 0xffffffff, (void *)RCPU_CORE1_BOOT_ENTRY_LO);
+	writel((entry >> 32) & 0xffffffff, (void *)RCPU_CORE1_BOOT_ENTRY_HI);
+
+	val = readl((unsigned int *)RT24_CORE1_IDLE_CFG_REG);
+	val |= 0x3;
+	writel(val, (unsigned int *)RT24_CORE1_IDLE_CFG_REG);
+
+	asm volatile ("fence iorw, iorw");
+	asm volatile ("fence");
+
+	while (1) {
+		asm volatile ("fence");
+		asm volatile ("nop");
+		asm volatile ("nop");
+		asm volatile ("nop");
+		asm volatile ("nop");
+		asm volatile ("nop");
+		asm volatile ("wfi");
+		asm volatile ("nop");
+		asm volatile ("nop");
+		asm volatile ("nop");
+		asm volatile ("nop");
+		asm volatile ("nop");
+	}
+}
+
+__attribute__((noinline))
+int __do_hibernation(rt_ubase_t entry)
+{
+	/* support hibernation restore */
+	if (readl((void *)RCPU_CORE0_BOOT_ENTRY_LO) == 0) {
+		writel(entry & 0xffffffff, (void *)RCPU_CORE0_BOOT_ENTRY_LO);
+		writel((entry >> 32) & 0xffffffff, (void *)RCPU_CORE0_BOOT_ENTRY_HI);
+
+		rt_memcpy((void *)RT_SNAPSHOT_RUNTIME0_MEM_START, (void *)RT_SNAPSHOT0_MEM_START, RT_SNAPSHOT_RUNTIME0_MEM_SIZE);
+		rt_memcpy((void *)RT_SNAPSHOT_RUNTIME1_MEM_START,
+				(void *)(RT_SNAPSHOT0_MEM_START + RT_SNAPSHOT_RUNTIME0_MEM_SIZE), RT_SNAPSHOT_RUNTIME1_MEM_SIZE);
+		rt_memcpy((void *)RT_SNAPSHOT_RUNTIME2_MEM_START,
+				(void *)(RT_SNAPSHOT0_MEM_START + RT_SNAPSHOT_RUNTIME0_MEM_SIZE + RT_SNAPSHOT_RUNTIME1_MEM_SIZE), RT_SNAPSHOT_RUNTIME2_MEM_SIZE);
+		rt_memcpy((void *)RT_SNAPSHOT_RUNTIME3_MEM_START, (void *)RT_SNAPSHOT1_MEM_START, RT_SNAPSHOT_RUNTIME3_MEM_SIZE);
+		rt_memcpy((void *)RT_SNAPSHOT_RUNTIME4_MEM_START, (void *)(RT_SNAPSHOT1_MEM_START + RT_SNAPSHOT_RUNTIME3_MEM_SIZE), RT_SNAPSHOT_RUNTIME4_MEM_SIZE);
+
+		asm volatile ("fence.i");
+		spacemit_wakeup_c0();
+
+		asm volatile("jr %0" :: "r"(entry));
+		__builtin_unreachable();
+
+	}
+
+	/* support hibernation store */
+	asm volatile ("fence.i");
+	rt_memcpy((void *)RT_SNAPSHOT0_MEM_START, (void *)RT_SNAPSHOT_RUNTIME0_MEM_START, RT_SNAPSHOT_RUNTIME0_MEM_SIZE);
+	rt_memcpy((void *)(RT_SNAPSHOT0_MEM_START + RT_SNAPSHOT_RUNTIME0_MEM_SIZE),
+			(void *)RT_SNAPSHOT_RUNTIME1_MEM_START, RT_SNAPSHOT_RUNTIME1_MEM_SIZE);
+	rt_memcpy((void *)(RT_SNAPSHOT0_MEM_START + RT_SNAPSHOT_RUNTIME0_MEM_SIZE + RT_SNAPSHOT_RUNTIME1_MEM_SIZE),
+			(void *)RT_SNAPSHOT_RUNTIME2_MEM_START, RT_SNAPSHOT_RUNTIME2_MEM_SIZE);
+	rt_memcpy((void *)RT_SNAPSHOT1_MEM_START, (void *)RT_SNAPSHOT_RUNTIME3_MEM_START, RT_SNAPSHOT_RUNTIME3_MEM_SIZE);
+	rt_memcpy((void *)(RT_SNAPSHOT1_MEM_START + RT_SNAPSHOT_RUNTIME3_MEM_SIZE), (void *)RT_SNAPSHOT_RUNTIME4_MEM_START, RT_SNAPSHOT_RUNTIME4_MEM_SIZE);
+	
+	asm volatile ("fence.i");
+	spacemit_wakeup_c0();
+	return RT_EOK;
+}
+
+/* switch to dedicated stack at 0x100700000 before hibernation operations */
+__attribute__((naked))
+static int __hibernation_enter(rt_ubase_t entry)
+{
+	asm volatile (
+		"mv   t0, sp\n\t"            /* save caller sp */
+		"li   sp, 0x100700400\n\t"   /* switch to dedicated stack */
+		"addi sp, sp, -16\n\t"       /* allocate frame on dedicated stack */
+		"sd   t0, 0(sp)\n\t"         /* save caller sp on dedicated stack */
+		"sd   ra, 8(sp)\n\t"         /* save return address on dedicated stack */
+		"call __do_hibernation\n\t"  /* call hibernation (not tail) */
+		"ld   ra, 8(sp)\n\t"         /* restore return address */
+		"ld   sp, 0(sp)\n\t"         /* restore caller sp */
+		"ret"
+	);
+}
+
 static int __suspend_asm_finish(rt_ubase_t arg, rt_ubase_t entry, rt_ubase_t context)
 {
 	unsigned int val;
 	typedef void (*__entry)(void *);
 	__entry ptr;
 
-	if (read_csr(mhartid) == 0) {
-		rt_memcpy((void *)0x0, (void *)__esos_lite_start,
-				(unsigned long)__esos_lite_end - (unsigned long)__esos_lite_start);
-		/* vote per */
-		asm volatile ("fence.i");
+	if (read_csr(mhartid) != 0) {
+		__core1_enter_wfi(entry);
+		/* unreachable */
+	}
 
-		/* jump to sram */
+	/* hart0 path */
+	if (arg == PM_SLEEP_MODE_DEEP) {
+		rt_memcpy((void *)0x0, (void *)__esos_lite_start,
+			(unsigned long)__esos_lite_end - (unsigned long)__esos_lite_start);
+		asm volatile ("fence.i");
 		ptr = (__entry)0x0;
 		ptr((void *)entry);
 	} else {
-		/* tell rcpu0 that i will power down */
-		mbox_send_message(lpm_tx_chan, &val);
-		mbox_chan_txdone(lpm_tx_chan, 0);
-
-		writel(entry & 0xffffffff, (void *)RCPU_CORE1_BOOT_ENTRY_LO);
-		writel((entry >> 32) & 0xffffffff, (void *)RCPU_CORE1_BOOT_ENTRY_HI);
-
-		val = readl((unsigned int *)RT24_CORE1_IDLE_CFG_REG);
-		val |= 0x3;
-		writel(val, (unsigned int *)RT24_CORE1_IDLE_CFG_REG);	
-
-		asm volatile ("fence iorw, iorw");
-		asm volatile ("fence");
-	}
-
-
-	/* enter wfi */
-	while (1) {
-		asm volatile ("fence");
-		asm volatile("nop");
-		asm volatile("nop");
-		asm volatile("nop");
-		asm volatile("nop");
-		asm volatile("nop");
-		asm volatile ("wfi");
-		asm volatile("nop");
-		asm volatile("nop");
-		asm volatile("nop");
-		asm volatile("nop");
-		asm volatile("nop");
+		return __hibernation_enter(entry);
 	}
 
 	/* should never be here */
@@ -161,7 +226,7 @@ static void sleep(struct rt_pm *pm, uint8_t mode)
 		/* clear the timer pending */
 		clear_csr(mip, MIP_MTIP);
 
-		cpu_suspend(0, __suspend_asm_finish);
+		cpu_suspend(PM_SLEEP_MODE_DEEP, __suspend_asm_finish);
 
 		/* enable the clint timer */
 		SysTimer_SetCompareValue(time);
@@ -189,6 +254,39 @@ static void sleep(struct rt_pm *pm, uint8_t mode)
 	break;
 
 	case PM_SLEEP_MODE_SHUTDOWN:
+		/* save the plic configuration */
+		rt_hw_eclic_save();
+
+		/* disable the clint timer */
+		time = SysTimer_GetLoadValue();
+		SysTimer_SetCompareValue(0xffffffffffffffff);
+		/* clear the timer pending */
+		clear_csr(mip, MIP_MTIP);
+
+		cpu_suspend(PM_SLEEP_MODE_SHUTDOWN, __suspend_asm_finish);
+
+		/* enable the clint timer */
+		SysTimer_SetCompareValue(time);
+
+		/* restore the plic configuration */
+		rt_hw_eclic_restore();
+
+		if (read_csr(mhartid) == 1) {
+			val = readl((unsigned int *)RT24_CORE1_IDLE_CFG_REG);
+			val &= ~0x3;
+			writel(val, (unsigned int *)RT24_CORE1_IDLE_CFG_REG);
+
+			/* tell rcpu0 that i has been powered up */
+			rt_sem_release(rt_lowpwrsem);
+		} else {
+			rt_sem_release((rt_sem_t)lpmdev->user_data);
+			/* unmaks Cluster0 M2 exit interrupt */
+			rt_hw_interrupt_umask(AP_C0_M2_EXIT_INT_NUM);
+			rt_pm_release(PM_SLEEP_MODE_SHUTDOWN);
+			rt_pm_request(RT_PM_DEFAULT_DEEPSLEEP_MODE);
+		}
+
+		rt_pm_request(RT_PM_DEFAULT_SLEEP_MODE);
 	break;
 
 	default:

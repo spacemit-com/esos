@@ -122,7 +122,7 @@ void spacemit_cx_m2_int_disabled(rt_uint32_t hartid)
 	val |= (0x1 << 1);
 	writel(val, (unsigned int *)clx_m2_lp_ctl);
 
-	val = readl((unsigned int *)clx_m2_lp_ctl);
+ 	val = readl((unsigned int *)clx_m2_lp_ctl);
 	while (((val >> 6) & 0x3f) != 1) {
 		val = readl((unsigned int *)clx_m2_lp_ctl);
 	}
@@ -401,6 +401,11 @@ void spacemit_vote_powrdown_cluster(unsigned int hartid)
 	default:
 		break;
 	}
+}
+
+int spacemit_wakeup_c0(void)
+{
+	writel((1 << 0), (unsigned int *)PMU_CAP_CORE0_WAKEUP);
 }
 
 void spacemit_devote_pwrdown_c2(void)

@@ -162,5 +162,6 @@ unsigned long long spacemit_get_c3_bootenty(void);
 void spacemit_set_c3_bootenty(unsigned long long _entry);
 void spacemit_wait_c3_pwrup(void);
 void spacemit_wakeup_rcpu1(void);
+int spacemit_wakeup_c0(void);
 
 #endif /* __k3_HSM_H__ */

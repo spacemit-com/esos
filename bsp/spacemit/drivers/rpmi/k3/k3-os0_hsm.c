@@ -272,6 +272,9 @@ static void syssusp_finalize(
 {
 	struct spacemit_rpmi_hsm_config *config = (struct spacemit_rpmi_hsm_config *)priv;
 
+	if (syssusp_type->type == RPMI_SYSSUSP_TYPE_SUSPEND_TO_DISK)
+		config->mulos->hibernate_pending = 1;
+
 	rt_event_send(config->event, (1 << config->bootcore_index));
 }
 

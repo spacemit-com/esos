@@ -184,6 +184,7 @@ struct spacemit_rpmi_msi_ops {
 struct spacemit_multiple_os {
 	struct spacemit_rpmi_hsm_config *hsm[PLATFROM_MAX_OS];
 	int os_count;
+	int hibernate_pending;
 	rt_event_t multiple_event;
 	rt_thread_t multiple_tid;
 	rt_sem_t msem;

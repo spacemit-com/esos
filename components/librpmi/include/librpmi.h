@@ -282,6 +282,7 @@ enum rpmi_system_suspend_service_id {
 /* RPMI Suspend Types */
 enum rpmi_syssusp_suspend_type {
 	RPMI_SYSSUSP_TYPE_SUSPEND_TO_RAM = 0x0,
+	RPMI_SYSSUSP_TYPE_SUSPEND_TO_DISK = 0x1,
 	RPMI_SYSSUSP_TYPE_MAX,
 };
 
