@@ -205,7 +205,15 @@ function create_esos_itb()
 
 	# Always output as esos.itb regardless of signing
 	local itb_file="esos.itb"
-	local its_file="esos_${TOP_TARGET_CHIP}.its"
+	# KEY_DIR is the sign/no-sign switch: present → use signed ITS + -k -r
+	local its_file key_para
+	if [ -n "${KEY_DIR}" ]; then
+		its_file="esos_${TOP_TARGET_CHIP}_sign.its"
+		key_para="-k ${KEY_DIR} -r"
+	else
+		its_file="esos_${TOP_TARGET_CHIP}.its"
+		key_para=""
+	fi
 
 	# Use ITS template from top directory
 	local its_path="${TOP_DIR}/${its_file}"
@@ -231,9 +239,10 @@ function create_esos_itb()
 	local its_work="${TOP_DIR}/.esos_${TOP_TARGET_CHIP}.its"
 	sed "s#../output/esos#${TOP_OUTPUT_DIR}#g" "${its_path}" > "${its_work}"
 
-	mkimage -f "${its_work}" ${TOP_BSP_DIR}/${itb_file}
+	mkimage -f "${its_work}" ${key_para} ${TOP_BSP_DIR}/${itb_file}
 	rm -f "${its_work}"
 	mk_info "ITB created: ${TOP_BSP_DIR}/${itb_file}"
+	[ -n "${KEY_DIR}" ] && mkimage -l ${TOP_BSP_DIR}/${itb_file} | grep -i "sign\|Sign"
 
 	# Copy ITB to output directory
 	OUTPUT_DIR="${TOP_OUTPUT_DIR}"

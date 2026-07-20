@@ -41,7 +41,7 @@
 			loadables = "rcpu0-fw", "rcpu1-fw";
 			signature-1 {
 				algo = "sha256,rsa2048";
-				key-name-hint = "uboot_pubkey_prv";
+				key-name-hint = "uboot_key_prv";
 				sign-images = "loadables";
 			};
 		};

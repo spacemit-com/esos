@@ -272,8 +272,15 @@ function create_esos_itb()
 
 	# Always output as esos.itb regardless of signing
 	local itb_file="esos.itb"
-	local its_file="esos_${TARGET_CHIP}.its"
-
+	# KEY_DIR is the sign/no-sign switch: present → use signed ITS + -k -r
+	local its_file key_para
+	if [ -n "${KEY_DIR}" ]; then
+		its_file="esos_${TARGET_CHIP}_sign.its"
+		key_para="-k ${KEY_DIR} -r"
+	else
+		its_file="esos_${TARGET_CHIP}.its"
+		key_para=""
+	fi
 	# Use ITS template from top directory
 	local its_path="${TOP_DIR}/${its_file}"
 	if [ ! -f "${its_path}" ]; then
@@ -295,8 +302,9 @@ function create_esos_itb()
 	# Generate ITB using mkimage (run from TOP_DIR for correct relative paths in ITS)
 	cd ${TOP_DIR}
 
-	mkimage -f ${its_path} ${BSP_DIR}/${itb_file}
+	mkimage -f "${its_path}" ${key_para} ${BSP_DIR}/${itb_file}
 	mk_info "ITB created: ${BSP_DIR}/${itb_file}"
+	[ -n "${KEY_DIR}" ] && mkimage -l ${BSP_DIR}/${itb_file} | grep -i "sign\|Sign"
 
 	# Copy ITB to output directory
 	if [ -d "${TOP_DIR}/../humbird" ]; then

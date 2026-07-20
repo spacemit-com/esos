@@ -26,9 +26,18 @@ override_dh_auto_configure:
 	touch ${TOP_BSP_DIR}/rtconfig.h
 
 override_dh_auto_build:
-	# Use the build.sh script to build the project
+	# Use the build.sh script to build the project.
+	# KEY_DIR controls signing:
+	#   - set   → build_top.sh uses the signed ITS (sha256,rsa2048) and runs
+	#             mkimage -k $(KEY_DIR) -r to produce a signed esos.itb.
+	#   - empty → unsigned ITB (crc32 only).
+	#
+	# Invocation examples:
+	#   Signed:   KEY_DIR=/path/to/keys dpkg-buildpackage -b -us -uc
+	#   Unsigned: dpkg-buildpackage -b -us -uc
+	#
 	cp $(TOP_DIR)/debian/lib/* /usr/lib/gcc/riscv64-unknown-elf/14.2.0/
-	TOP_OUTPUT_DIR=$(TOP_DIR)/output/esos RTT_EXEC_PATH=/usr/bin $(TOP_DIR)/build_top.sh
+	TOP_OUTPUT_DIR=$(TOP_DIR)/output/esos RTT_EXEC_PATH=/usr/bin KEY_DIR=$(KEY_DIR) $(TOP_DIR)/build_top.sh
 
 override_dh_auto_clean:
 	# Clean build artifacts
