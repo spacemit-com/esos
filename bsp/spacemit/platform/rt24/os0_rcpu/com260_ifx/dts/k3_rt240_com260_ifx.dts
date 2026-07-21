@@ -165,6 +165,12 @@
 	status = "okay";
 };
 
+&rpmi_sysreset0 {
+	compatible = "k3-os0-rpmi-sysreset";
+	shutdown-gpio = <88>;
+	status = "okay";
+};
+
 &regulators {
 	pvin: pvin {
 		compatible = "regulator-fixed";
