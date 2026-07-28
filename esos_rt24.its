@@ -444,7 +444,7 @@
 			type = "standalone";
 			os = "esos";
 			arch = "riscv";
-			compression = "none";
+			compression = "lzo";
 			load = <0x1 0xd01000>;
 			entry = <0x1 0xd01000>;
 			data = /incbin/("../output/esos/k3_rt240_firefly_aibox_k3.dtb.lzo");
@@ -458,7 +458,7 @@
 			type = "standalone";
 			os = "esos";
 			arch = "riscv";
-			compression = "none";
+			compression = "lzo";
 			load = <0x1 0xd0D800>;
 			entry = <0x1 0xd0D800>;
 			data = /incbin/("../output/esos/k3_rt241_firefly_aibox_k3.dtb.lzo");
