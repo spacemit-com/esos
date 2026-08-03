@@ -145,6 +145,7 @@ static enum rpmi_error rpmi_device_power_get_state(struct rpmi_device_power_grou
 				     rpmi_uint32_t domainid,
 				     enum rpmi_device_power_state *state)
 {
+	enum rpmi_error ret;
 	struct rpmi_device_power *dev_power = rpmi_get_device_domain(devpwrgrp, domainid);
 
 	if (!dev_power || !state)
@@ -152,7 +153,13 @@ static enum rpmi_error rpmi_device_power_get_state(struct rpmi_device_power_grou
 
 	rpmi_env_lock(dev_power->lock);
 
-	*state = dev_power->current_state;
+	if (devpwrgrp->ops->get_state) {
+		ret = devpwrgrp->ops->get_state(devpwrgrp->ops_priv, domainid, state);
+		if (ret == RPMI_SUCCESS)
+			dev_power->current_state = *state;
+	} else {
+		*state = dev_power->current_state;
+	}
 
 	rpmi_env_unlock(dev_power->lock);
 
