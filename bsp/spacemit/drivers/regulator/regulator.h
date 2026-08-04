@@ -1,6 +1,10 @@
 #ifndef __RT_SPACEMIT_REGULATOR_H__
 #define __RT_SPACEMIT_REGULATOR_H__
 
+#include <rtthread.h>
+#include <rtdevice.h>
+#include <drivers/regulator.h>
+
 #define P1_BUCK_VSEL_MASK		0xff
 #define P1_BUCK_EN_MASK		        0x1
 
@@ -154,6 +158,10 @@ struct spacemit_regulator {
 
 #ifndef ARRAY_SIZE
 #define ARRAY_SIZE(x)    (sizeof(x) / sizeof(x[0]))
+#endif
+
+#ifdef RT_USING_PM
+void tda38740_pm_device_register(struct rt_device *dev);
 #endif
 
 /* Initialize struct linear_range for regulators */

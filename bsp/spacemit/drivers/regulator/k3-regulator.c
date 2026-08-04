@@ -817,6 +817,11 @@ static rt_int32_t spacemit_regulator_probe(void)
 				rt_kprintf("%s:%d, register regulator error\n", __func__, __LINE__);
 				return -RT_EINVAL;
 			}
+
+#ifdef RT_USING_PM
+			if (!strncmp(__dcdc_compatible[i].compatible, "regulator-tda38740", 18))
+				tda38740_pm_device_register(rnp->dev);
+#endif
 		}
 	}
 
