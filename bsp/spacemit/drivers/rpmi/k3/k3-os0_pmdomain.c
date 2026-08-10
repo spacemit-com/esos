@@ -13,6 +13,7 @@
 #include "../spacemit-rpmi.h"
 
 #define DEVICE_POWER_STATE_OFFSET 0xF0
+#define AUDIO_DOMAIN_INDEX	0x2
 
 struct rt_domain_data {
 	uint32_t offset;
@@ -98,7 +99,8 @@ static enum rpmi_error spacemit_set_state(void *priv, rpmi_uint32_t domain_id, e
 	rt_int32_t loop;
 
 	if (state == RPMI_DEVICE_POWER_STATE_ON) {
-		if (ptr[domain_id].dummy) {
+		/* Audio power switch is managed by RCPU itself; kernel must not control it */
+		if ((ptr[domain_id].dummy) || (domain_id == AUDIO_DOMAIN_INDEX)) {
 			ptr[domain_id].current_state = 1;
 			return 0;
 		}
@@ -126,8 +128,10 @@ static enum rpmi_error spacemit_set_state(void *priv, rpmi_uint32_t domain_id, e
 				rt_hw_us_delay(4);
 			}
 
-			if (loop < 0)
+			if (loop < 0) {
+				rt_kprintf("%s:%d\n", __func__, __LINE__);
 				return -RT_ETIMEOUT;
+			}
 		} else {
 			val = readl((config->base + ptr[domain_id].offset));
 			val |= (1 << ptr[domain_id].bit_hw_mode) |
@@ -142,13 +146,16 @@ static enum rpmi_error spacemit_set_state(void *priv, rpmi_uint32_t domain_id, e
 				rt_hw_us_delay(4);
 			}
 
-			if (loop < 0)
+			if (loop < 0) {
+				rt_kprintf("%s:%d\n", __func__, __LINE__);
 				return -RT_ETIMEOUT;
+			}
 		}
 
 		ptr[domain_id].current_state = 1;
 	} else {
-		if (ptr[domain_id].dummy) {
+		/* Audio power switch is managed by RCPU itself; kernel must not control it */
+		if ((ptr[domain_id].dummy) || (domain_id == AUDIO_DOMAIN_INDEX)) {
 			ptr[domain_id].current_state = 0;
 			return 0;
 		}
@@ -171,8 +178,10 @@ static enum rpmi_error spacemit_set_state(void *priv, rpmi_uint32_t domain_id, e
 				rt_hw_us_delay(4);
 			}
 
-			if (loop < 0)
+			if (loop < 0) {
+				rt_kprintf("%s:%d\n", __func__, __LINE__);
 				return -RT_ETIMEOUT;
+			}
 		} else {
 			val = readl((config->base + ptr[domain_id].offset));
 			val &= ~(1 << ptr[domain_id].bit_auto_pwr_on);
@@ -187,8 +196,10 @@ static enum rpmi_error spacemit_set_state(void *priv, rpmi_uint32_t domain_id, e
 				rt_hw_us_delay(4);
 			}
 
-			if (loop < 0)
+			if (loop < 0) {
+				rt_kprintf("%s:%d\n", __func__, __LINE__);
 				return -RT_ETIMEOUT;
+			}
 		}
 
 		ptr[domain_id].current_state = 0;
@@ -205,7 +216,10 @@ static enum rpmi_error spacemit_get_state(void *priv, rpmi_uint32_t domain_id, e
 
 	if (!ptr[domain_id].dummy) {
 		val = readl((config->base + DEVICE_POWER_STATE_OFFSET));
-		ptr[domain_id].current_state = (val & (1 << ptr[domain_id].bit_pwr_stat)) ? 1 : 0;
+		if (ptr[domain_id].use_hw == 0)
+			ptr[domain_id].current_state = (val & (1 << ptr[domain_id].bit_pwr_stat)) ? 1 : 0;
+		else
+			ptr[domain_id].current_state = (val & (1 << ptr[domain_id].bit_hw_pwr_stat)) ? 1 : 0;
 	}
 	*state = ptr[domain_id].current_state;
 
