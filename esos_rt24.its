@@ -517,7 +517,7 @@
 		};
 
 		conf_dual_4 {
-			description = "k3_dc_fml13v05";
+			description = "k3-deepcomputing-fml13v05";
 			loadables = "rcpu-data-null", "rcpu0-dtb-dc-fml13v05", "rcpu1-dtb-dc-fml13v05", "rcpu0-fw", "rcpu1-fw";
 		};
 
