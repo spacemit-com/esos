@@ -634,7 +634,7 @@ def DefineGroup(name, src, depend, **parameters):
     group['path'] = group_path
     if type(src) == type([]):
         # remove duplicate elements from list
-        src = list(set(src))
+        src = list(dict.fromkeys(src))
         group['src'] = File(src)
     else:
         group['src'] = src

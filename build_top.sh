@@ -34,6 +34,41 @@ function mk_info()
 	echo -e "\033[40;37mINFO: $*\033[0m"
 }
 
+function setup_reproducible_build()
+{
+	local esos_lite_epoch=
+
+	# Use source history, rather than wall-clock time, for generated timestamps.
+	# Honor an explicit SOURCE_DATE_EPOCH supplied by release automation.
+	if [ -z "${SOURCE_DATE_EPOCH:-}" ]; then
+		SOURCE_DATE_EPOCH=$(git -C "${TOP_DIR}" log -1 --format=%ct 2>/dev/null)
+		if [ -z "${SOURCE_DATE_EPOCH}" ]; then
+			mk_error "Unable to determine SOURCE_DATE_EPOCH from ${TOP_DIR}"
+			return 1
+		fi
+
+		# ESOS-lite is a separate repository. Use the newest relevant commit so
+		# the embedded build time advances when either source repository does.
+		esos_lite_epoch=$(git -C "${TOP_DIR}/components/esos-lite" \
+			log -1 --format=%ct 2>/dev/null || true)
+		if [[ "${esos_lite_epoch}" =~ ^[0-9]+$ ]] && \
+			(( esos_lite_epoch > SOURCE_DATE_EPOCH )); then
+			SOURCE_DATE_EPOCH=${esos_lite_epoch}
+		fi
+	fi
+
+	if ! [[ "${SOURCE_DATE_EPOCH}" =~ ^[0-9]+$ ]]; then
+		mk_error "SOURCE_DATE_EPOCH must be a non-negative integer"
+		return 1
+	fi
+
+	# RT-Thread's SCons helper de-duplicates sources through a Python set.
+	# A fixed hash seed keeps the resulting linker input order stable.
+	export PYTHONHASHSEED=0
+	export SOURCE_DATE_EPOCH
+	mk_info "Reproducible build epoch: ${SOURCE_DATE_EPOCH}"
+}
+
 function select_chip()
 {
 	count=0
@@ -181,6 +216,12 @@ function compress_esos_fit_inputs()
 
 	while IFS= read -r -d '' payload; do
 		mk_info "Compressing FIT payload: ${payload}"
+		# lzop stores the input mtime in its header. Normalize generated inputs
+		# before compression so identical payloads produce identical streams.
+		if ! touch -d "@${SOURCE_DATE_EPOCH}" "${payload}"; then
+			mk_error "Failed to normalize timestamp: ${payload}"
+			return 1
+		fi
 		if ! lzop -9 -f "${payload}"; then
 			mk_error "Failed to compress FIT payload: ${payload}"
 			return 1
@@ -190,6 +231,10 @@ function compress_esos_fit_inputs()
 	# Keep the ITS self-consistent by compressing the AP interaction blob too.
 	if [ -f "${output_dir}/null.spacemit" ]; then
 		mk_info "Compressing FIT payload: ${output_dir}/null.spacemit"
+		if ! touch -d "@${SOURCE_DATE_EPOCH}" "${output_dir}/null.spacemit"; then
+			mk_error "Failed to normalize timestamp: ${output_dir}/null.spacemit"
+			return 1
+		fi
 		if ! lzop -9 -f "${output_dir}/null.spacemit"; then
 			mk_error "Failed to compress FIT payload: ${output_dir}/null.spacemit"
 			return 1
@@ -366,6 +411,9 @@ elif [ "x$1" = "xconfig" ]; then
 	config_sdk
 	exit 0
 elif [ "x$1" = "x" ]; then
+	if ! setup_reproducible_build; then
+		exit 1
+	fi
 	build_kernel
 	exit $?
 fi

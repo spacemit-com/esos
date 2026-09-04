@@ -19,6 +19,8 @@ CXX  = rtconfig.CXX,  CXXFLAGS  = rtconfig.CXXFLAGS,
 AR   = rtconfig.AR,   ARFLAGS   = '-rc',
 LINK = rtconfig.LINK, LINKFLAGS = rtconfig.LFLAGS)
 env.PrependENVPath('PATH', rtconfig.EXEC_PATH)
+if os.getenv('SOURCE_DATE_EPOCH'):
+    env['ENV']['SOURCE_DATE_EPOCH'] = os.getenv('SOURCE_DATE_EPOCH')
 
 # add --start-group and --end-group for GNU GCC
 env['LINKCOM'] = '$LINK -o $TARGET $LINKFLAGS $__RPATH $SOURCES $_LIBDIRFLAGS -Wl,--start-group $_LIBFLAGS -Wl,--end-group'
