@@ -278,7 +278,7 @@ rt_uint64_t ccu_mix_calc_best_rate(struct clk_hw *hw, rt_uint64_t rate, rt_uint3
 		parent = clk_hw_get_parent_by_index(hw, i);
 		if (!parent)
 			continue;
-		parent_rate = clk_get_rate(clk_hw_get_clk(parent, common->name));
+		parent_rate = clk_hw_get_rate(parent);
 
 		if(div)
 			div_max = 1 << div->width;
