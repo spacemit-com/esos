@@ -2,8 +2,8 @@
 
 PACKAGE_SRC_NAME="esos"
 CLEAN_CMD='rm -rf output/esos; rm -f bsp/spacemit/.esos_top.config bsp/spacemit/.esos.config bsp/spacemit/*.itb bsp/spacemit/*.elf bsp/spacemit/*.bin bsp/spacemit/platform/rt24/*.dtb; (cd bsp/spacemit && scons -c >/dev/null 2>&1 || true)'
-BUILD_CMD='git config --global --add safe.directory "*"; TOP_OUTPUT_DIR=$(pwd)/output/esos ./build_top.sh'
-BUILD_DEB_CMD='git config --global --add safe.directory "*"; mkdir -p /usr/lib/gcc/riscv64-unknown-elf/14.2.0 /usr/local/bin; for t in objdump readelf strip nm objcopy size strings addr2line ranlib ar elfedit; do [ -e /usr/bin/$t ] && ln -sf /usr/bin/$t /usr/local/bin/riscv64-linux-gnu-$t; done; GIT_VERSION=$(git rev-parse --short HEAD 2>/dev/null); VERSION=$(if [ -n "$GIT_VERSION" ]; then echo "0~g$GIT_VERSION"; else echo "0~$(date +%Y%m%d%H%M%S)"; fi); rm -rf debian/changelog; dch --create --package '"$PACKAGE_SRC_NAME"' -v ${VERSION} --distribution resolute-porting --force-distribution "Bianbu Test"; DEB_BUILD_OPTIONS="nocheck nostrip" dpkg-buildpackage -us -uc -b -ariscv64 -d -j${JOBS:-$(nproc)}'
+BUILD_CMD='TOP_OUTPUT_DIR=$(pwd)/output/esos ./build_top.sh'
+BUILD_DEB_CMD='GIT_VERSION=$(git rev-parse --short HEAD 2>/dev/null); VERSION=$(if [ -n "$GIT_VERSION" ]; then echo "0~g$GIT_VERSION"; else echo "0~$(date +%Y%m%d%H%M%S)"; fi); rm -rf debian/changelog; dch --create --package '"$PACKAGE_SRC_NAME"' -v ${VERSION} --distribution resolute-porting --force-distribution "Bianbu Test"; DEB_BUILD_OPTIONS="nocheck nostrip" dpkg-buildpackage -us -uc -b -ariscv64 -d -j${JOBS:-$(nproc)}'
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SOURCE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
@@ -208,13 +208,37 @@ CONTAINER_ENV=("-e" "ARCH=riscv" "-e" "CROSS_COMPILE=$CROSS_COMPILE" "-e" "PATH=
 if [[ -n "$JOBS" ]]; then
     CONTAINER_ENV+=("-e" "JOBS=$JOBS")
 fi
+# Function to create user permission files for container
+create_user_files() {
+    local current_user current_group
+    current_user="$(whoami):x:$(id -u):$(id -g):$(whoami),,,:/home/$(whoami):/bin/bash"
+    current_group="$(id -gn):x:$(id -g):"
+
+    # Create or update .passwd and .group files
+    if [ ! -f "$SOURCE_DIR/.passwd" ] || \
+       [ ! -f "$SOURCE_DIR/.group" ] || \
+       [ "$current_user" != "$(grep "^$(whoami):" "$SOURCE_DIR/.passwd" 2>/dev/null)" ] || \
+       [ "$current_group" != "$(grep "^$(id -gn):" "$SOURCE_DIR/.group" 2>/dev/null)" ]; then
+        cp /etc/passwd "$SOURCE_DIR/.passwd.tmp"
+        cp /etc/group "$SOURCE_DIR/.group.tmp"
+
+        if ! grep -q "^$(whoami):" "$SOURCE_DIR/.passwd.tmp"; then
+            echo "$current_user" >> "$SOURCE_DIR/.passwd.tmp"
+        fi
+
+        if ! grep -q "^$(id -gn):" "$SOURCE_DIR/.group.tmp"; then
+            echo "$current_group" >> "$SOURCE_DIR/.group.tmp"
+        fi
+
+        mv "$SOURCE_DIR/.passwd.tmp" "$SOURCE_DIR/.passwd"
+        mv "$SOURCE_DIR/.group.tmp" "$SOURCE_DIR/.group"
+    fi
+}
+
+# Create user permission files
+create_user_files
 
 # Function to run command in container
-#
-# NOTE: Unlike the kernel/opensbi/uboot wrappers, this runs as root (no `-u`)
-# because esos's debian/rules needs to write into /usr/lib (the `cp debian/lib/*`
-# step) and to have the elf toolchain discoverable. The compiler itself is found
-# via PATH (TOOLCHAIN_PATH above) even though debian/rules sets RTT_EXEC_PATH=/usr/bin.
 run_in_container() {
     local cmd="$1"
 
@@ -228,6 +252,9 @@ run_in_container() {
         for e in "${CONTAINER_ENV[@]}"; do
             full_cmd+=" $e"
         done
+        full_cmd+=" -v $SOURCE_DIR/.passwd:/etc/passwd:ro"
+        full_cmd+=" -v $SOURCE_DIR/.group:/etc/group:ro"
+        full_cmd+=" -u $(id -u):$(id -g)"
         full_cmd+=" $DOCKER_REPO/$IMAGE_NAME"
         full_cmd+=" bash -c \"$cmd\""
         echo "$full_cmd"
@@ -237,6 +264,9 @@ run_in_container() {
     docker run --rm -it --init \
         "${VOLUME_MOUNTS[@]}" \
         "${CONTAINER_ENV[@]}" \
+        -v "$SOURCE_DIR/.passwd:/etc/passwd:ro" \
+        -v "$SOURCE_DIR/.group:/etc/group:ro" \
+        -u "$(id -u):$(id -g)" \
         "$DOCKER_REPO/$IMAGE_NAME" \
         bash -c "$cmd"
 }
