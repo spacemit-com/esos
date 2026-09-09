@@ -101,7 +101,6 @@
 	regulator-fixed3 = <&pwren_x100>;
 	regulator-fixed4 = <&pwren_a100>;
 	regulator-fixed5 = <&pwren_exterdc>;
-	regulator-fixed6 = <&edcdc2>;
 
 	regulator-dynamic0 = <&edcdc1>;
 	regulator-dynamic1 = <&dcdc1>;
@@ -120,6 +119,7 @@
 	regulator-dynamic14 = <&dldo_5>;
 	regulator-dynamic15 = <&dldo_6>;
 	regulator-dynamic16 = <&dldo_7>;
+	regulator-dynamic17 = <&edcdc2>;
 };
 
 &rpmi_voltage {
@@ -165,6 +165,12 @@
 	status = "okay";
 };
 
+&rpmi_sysreset0 {
+	compatible = "k3-os0-rpmi-sysreset";
+	shutdown-gpio = <88>;
+	status = "okay";
+};
+
 &regulators {
 	pvin: pvin {
 		compatible = "regulator-fixed";
@@ -177,10 +183,12 @@
 
 	/* a100 */
 	edcdc2: edcdc2 {
-		compatible = "regulator-fixed";
+		bind_driver = "ri2c2";
+		slave_addr = <0x4f>;
+		compatible = "regulator-tda38740-2";
 		regulator-name = "edcdc2";
-		regulator-min-microvolt = <800000>;
-		regulator-max-microvolt = <800000>;
+		regulator-min-microvolt = <534000>;
+		regulator-max-microvolt = <1100000>;
 		vin-supply = <&pwren_a100>;
 		index = <22>;
 	};
@@ -188,11 +196,11 @@
 	/* x100 */
 	edcdc1: edcdc1 {
 		bind_driver = "ri2c2";
-		slave_addr = <0x30>;
-		compatible = "regulator-is6608";
+		slave_addr = <0x42>;
+		compatible = "regulator-tda38740-1";
 		regulator-name = "edcdc1";
 		regulator-min-microvolt = <534000>;
-		regulator-max-microvolt = <1000000>;
+		regulator-max-microvolt = <1100000>;
 		vin-supply = <&pwren_x100>;
 		index = <23>;
 	};
