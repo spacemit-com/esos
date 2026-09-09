@@ -13,6 +13,10 @@ if GetDepend('SOC_SPACEMIT_K1_X') == False:
 if GetDepend('BSP_UART_TEST') == False:
     SrcRemove(src, ['uart-test.c'])
 
+# Remove rpmsg serial file if BSP_USING_RPMSG_SERIAL is not enabled
+if GetDepend('BSP_USING_RPMSG_SERIAL') == False:
+    SrcRemove(src, ['rpmsg_serial.c'])
+
 group   = DefineGroup('drv_uart', src, depend = ['BSP_USING_UART'], CPPPATH = CPPPATH)
 
 Return('group')

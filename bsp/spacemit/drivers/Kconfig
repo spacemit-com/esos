@@ -151,6 +151,11 @@ menu "On-chip Peripheral Drivers"
        config BSP_RPROC_TEST
           bool "Enable rproc test driver"
           default n
+
+       config BSP_USING_RPMSG_SERIAL
+          bool "Enable rpmsg virtual serial (console over rpmsg)"
+          default n
+          select RT_USING_SERIAL
     endif
 
     config BSP_USING_REGULATOR

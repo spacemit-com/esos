@@ -12,6 +12,9 @@
 #include <rtdevice.h>
 #include <spacemit_sdk_soc.h>
 #include <register_defination.h>
+#ifdef BSP_USING_RPMSG_SERIAL
+#include "drivers/uart/rpmsg_serial.h"
+#endif
 #ifdef RT_USING_ARMSCP_MODULE
 #include <fwk_arch.h>
 #endif
@@ -201,7 +204,12 @@ void rt_hw_board_init(void)
 #endif
 
 #if defined(RT_USING_CONSOLE) && defined(RT_USING_DEVICE)
+#ifdef BSP_USING_RPMSG_SERIAL
+    /* console/msh run over the rpmsg virtual serial instead of the UART */
+    rt_console_set_device(RT_RPMSG_SERIAL_NAME);
+#else
     rt_console_set_device(RT_CONSOLE_DEVICE_NAME);
+#endif
 #endif
 
 #ifdef RT_USING_ARMSCP_MODULE
