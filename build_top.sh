@@ -38,28 +38,30 @@ function setup_reproducible_build()
 {
 	local esos_lite_epoch=
 
-	# Use source history, rather than wall-clock time, for generated timestamps.
-	# Honor an explicit SOURCE_DATE_EPOCH supplied by release automation.
+	# Honor an explicit SOURCE_DATE_EPOCH supplied by release automation
+	# (e.g. Buildroot computes it from the pristine source tree before the
+	#  rsync step strips .git from the build tree).
 	if [ -z "${SOURCE_DATE_EPOCH:-}" ]; then
 		SOURCE_DATE_EPOCH=$(git -C "${TOP_DIR}" log -1 --format=%ct 2>/dev/null)
-		if [ -z "${SOURCE_DATE_EPOCH}" ]; then
-			mk_error "Unable to determine SOURCE_DATE_EPOCH from ${TOP_DIR}"
-			return 1
-		fi
 
-		# ESOS-lite is a separate repository. Use the newest relevant commit so
-		# the embedded build time advances when either source repository does.
-		esos_lite_epoch=$(git -C "${TOP_DIR}/components/esos-lite" \
-			log -1 --format=%ct 2>/dev/null || true)
-		if [[ "${esos_lite_epoch}" =~ ^[0-9]+$ ]] && \
-			(( esos_lite_epoch > SOURCE_DATE_EPOCH )); then
-			SOURCE_DATE_EPOCH=${esos_lite_epoch}
+		if [ -n "${SOURCE_DATE_EPOCH}" ]; then
+			# ESOS-lite is a separate repository: use the newest relevant
+			# commit so the embedded time advances when either repo does.
+			esos_lite_epoch=$(git -C "${TOP_DIR}/components/esos-lite" \
+				log -1 --format=%ct 2>/dev/null || true)
+			if [[ "${esos_lite_epoch}" =~ ^[0-9]+$ ]] && \
+				(( esos_lite_epoch > SOURCE_DATE_EPOCH )); then
+				SOURCE_DATE_EPOCH=${esos_lite_epoch}
+			fi
 		fi
 	fi
 
-	if ! [[ "${SOURCE_DATE_EPOCH}" =~ ^[0-9]+$ ]]; then
-		mk_error "SOURCE_DATE_EPOCH must be a non-negative integer"
-		return 1
+	if ! [[ "${SOURCE_DATE_EPOCH:-}" =~ ^[0-9]+$ ]]; then
+		# No usable git history (tarball release, or a build tree whose VCS
+		# metadata was stripped). Degrade instead of aborting; output is then
+		# NOT reproducible, which we surface loudly.
+		SOURCE_DATE_EPOCH=0
+		mk_warn "Unable to determine SOURCE_DATE_EPOCH; falling back to 0 (build NOT reproducible)"
 	fi
 
 	# RT-Thread's SCons helper de-duplicates sources through a Python set.
@@ -144,8 +146,15 @@ function create_version_id()
 {
 	mk_info "create the verion id ..."
 
-	pushd ${TOP_DIR}
-	commit_id=$(git log | head -1)
+	pushd ${TOP_DIR} >/dev/null
+	local commit_id=""
+	if [ -n "${GIT_COMMIT_ID:-}" ]; then
+		# Supplied by release automation (Buildroot) where the build tree
+		# has no usable .git.
+		commit_id="${GIT_COMMIT_ID}"
+	else
+		commit_id=$(git log | head -1)
+	fi
 	version_id=${commit_id: -12}
 	__version_id=".verid=\"${TOP_TARGET_BOARD}:${version_id}\""
 	echo ${__version_id}
@@ -155,7 +164,7 @@ function create_version_id()
 	echo "struct version_id __versionid spacemit_verid = {" >> ${version_id_cfg_file}
 	echo "    ${__version_id}," >> ${version_id_cfg_file}
 	echo "};" >> ${version_id_cfg_file}
-	popd
+	popd >/dev/null
 }
 
 function config_sdk()
