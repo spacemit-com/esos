@@ -17,10 +17,11 @@ Homepage: https://gitee.com/spacemit-buildroot/esos
 XBS-Commit-Id: ${misc:CommitId}
 
 Package: esos-spacemit
-Architecture: any
-Multi-Arch: foreign
+Architecture: riscv64
 Depends: ${misc:Depends},
          kmod
+Replaces: bianbu-esos
+Conflicts: bianbu-esos
 Description: ESOS(Energy Service OS) for SpacemiT platforms
  ESOS is a real-time operating system designed for SpacemiT platforms.
 
