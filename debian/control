@@ -1,7 +1,7 @@
 Source: esos-spacemit
 Section: embedded
 Priority: optional
-Maintainer: liweizhi <weizhi.li@spacemit.com>
+Maintainer: weizhi.li <weizhi.li@spacemit.com>
 Build-Depends: debhelper-compat (= 13),
                python3,
                scons,
@@ -14,7 +14,7 @@ Build-Depends: debhelper-compat (= 13),
                lzop
 Standards-Version: 4.5.0
 Homepage: https://gitee.com/spacemit-buildroot/esos
-XBS-Commit-Id:
+XBS-Commit-Id: ${misc:CommitId}
 
 Package: esos-spacemit
 Architecture: any
