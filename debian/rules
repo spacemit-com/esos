@@ -12,16 +12,21 @@ export TOP_CROSS_COMPILE=riscv64-unknown-elf-
 
 # Native vs cross detection (same idea as opensbi/debian/rules).
 # The payload compiler is riscv64-unknown-elf-gcc (newlib / bare-metal):
-#   - native (bianbu riscv64): system gcc-riscv64-unknown-elf + copy newlib
+#   - native (bianbu riscv64): system gcc-riscv64-unknown-elf + prebuilt newlib
 #   - cross  (x86_64 container): bundled x86_64 toolchain (ships its own newlib)
+#
+# The prebuilt newlib travels as debian/lib.tar.gz and is handed to the linker
+# via -L: the cross gcc ignores LIBRARY_PATH, and copying the archives into
+# /usr/lib/gcc/... requires root, which PPA builders do not have.
 DEB_HOST_ARCH  ?= $(shell dpkg-architecture -qDEB_HOST_ARCH)
 DEB_BUILD_ARCH ?= $(shell dpkg-architecture -qDEB_BUILD_ARCH)
 ifeq ($(DEB_HOST_ARCH),$(DEB_BUILD_ARCH))
 RTT_EXEC_PATH = /usr/bin
-NEWLIB_COPY = cp $(TOP_DIR)/debian/lib/* /usr/lib/gcc/riscv64-unknown-elf/14.2.0/
+EXTRA_LFLAGS = -L$(TOP_DIR)/debian/lib
 else
 RTT_EXEC_PATH = $(TOP_DIR)/tools/toolchain/spacemit-toolchain-elf-newlib-x86_64-v1.0.9/bin
-NEWLIB_COPY = true
+# The bundled toolchain ships its own newlib; no extra -L needed.
+EXTRA_LFLAGS =
 endif
 
 # get the commit ID
@@ -50,7 +55,11 @@ override_dh_auto_build:
 	#   Signed:   KEY_DIR=/path/to/keys dpkg-buildpackage -b -us -uc
 	#   Unsigned: dpkg-buildpackage -b -us -uc
 	#
-	$(NEWLIB_COPY)
+	# Unpack the prebuilt libraries (shipped as a tarball because dpkg-source
+	# excludes *.a by default when building source packages).
+	rm -rf $(TOP_DIR)/debian/lib
+	tar -xzf $(TOP_DIR)/debian/lib.tar.gz -C $(TOP_DIR)/debian/
+	EXTRA_LFLAGS="$(EXTRA_LFLAGS)" \
 	TOP_OUTPUT_DIR=$(TOP_DIR)/output/esos RTT_EXEC_PATH=$(RTT_EXEC_PATH) KEY_DIR=$(KEY_DIR) $(TOP_DIR)/build_top.sh
 
 override_dh_auto_clean:
@@ -62,6 +71,7 @@ override_dh_auto_clean:
 	rm -f $(TOP_BSP_DIR)/*.itb $(TOP_BSP_DIR)/*.elf $(TOP_BSP_DIR)/*.bin
 	rm -f $(TOP_BSP_DIR)/platform/rt24/*.dtb
 	rm -rf $(TOP_DIR)/output/esos
+	rm -rf $(TOP_DIR)/debian/lib
 
 override_dh_makeshlibs:
 	# ESOS is bare-metal firmware; nothing to register as a shared library.

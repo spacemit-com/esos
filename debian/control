@@ -10,7 +10,8 @@ Build-Depends: debhelper-compat (= 13),
                make,
                git,
                gcc-riscv64-unknown-elf,
-               libnewlib-dev
+               libnewlib-dev,
+               lzop
 Standards-Version: 4.5.0
 Homepage: https://gitee.com/spacemit-buildroot/esos
 XBS-Commit-Id:
@@ -22,3 +23,4 @@ Depends: ${misc:Depends},
          kmod
 Description: ESOS(Energy Service OS) for SpacemiT platforms
  ESOS is a real-time operating system designed for SpacemiT platforms.
+
