@@ -28,6 +28,26 @@ function mk_info()
 	echo -e "\033[40;37mINFO: $*\033[0m"
 }
 
+# The toolchain tarballs are not carried in git on this branch; pull them
+# from the SpacemiT archive on demand (the same source the Buildroot package
+# uses).  $1 = destination directory, $2 = tarball name.
+function fetch_toolchain()
+{
+	local dest="$1"
+	local tarball="$2"
+	local url="http://archive.spacemit.com/toolchain/${tarball}"
+
+	mk_info "Downloading toolchain: ${url}"
+	if command -v wget >/dev/null 2>&1; then
+		wget -O "${dest}/${tarball}" "${url}"
+	elif command -v curl >/dev/null 2>&1; then
+		curl -L -o "${dest}/${tarball}" "${url}"
+	else
+		mk_error "Neither wget nor curl is available; cannot download ${tarball}"
+		return 1
+	fi
+}
+
 function select_chip()
 {
 	count=0
@@ -193,37 +213,24 @@ function config_sdk()
 
 	mk_info "prepare to toolchain ..."
 
-	if [ "x${TARGET_CHIP}" = "xn308" ]; then
-		if [ ! -d "${TOP_DIR}/tools/toolchain/gcc" ]; then
-			mkdir -p ${TOP_DIR}/tools/toolchain/
-			cd ${TOP_DIR}/tools/toolchain/
-			if [ ! -f "nuclei_riscv_newlibc_prebuilt_linux64_2022.12.tar.bz2" ]; then
-				mk_info "Downloading nuclei toolchain..."
-				wget http://archive.spacemit.com/toolchain/nuclei_riscv_newlibc_prebuilt_linux64_2022.12.tar.bz2
-				if [ $? -ne 0 ]; then
-					mk_error "Failed to download nuclei toolchain"
-					cd -
-					return 1
-				fi
+	# Skip extraction when a toolchain is already provided via RTT_EXEC_PATH;
+	# otherwise fetch the tarball from the SpacemiT archive on demand, since
+	# this branch no longer carries it in git.
+	if [ -z "${RTT_EXEC_PATH}" ]; then
+		local tc_dir="${TOP_DIR}/tools/toolchain"
+		mkdir -p "${tc_dir}"
+		if [ "x${TARGET_CHIP}" = "xn308" ]; then
+			local tc_tar="nuclei_riscv_newlibc_prebuilt_linux64_2022.12.tar.bz2"
+			if [ ! -d "${tc_dir}/gcc" ]; then
+				[ -f "${tc_dir}/${tc_tar}" ] || fetch_toolchain "${tc_dir}" "${tc_tar}" || return 1
+				tar -jxvf "${tc_dir}/${tc_tar}" -C "${tc_dir}" || { mk_error "Failed to extract ${tc_tar}"; return 1; }
 			fi
-			tar -jxvf nuclei_riscv_newlibc_prebuilt_linux64_2022.12.tar.bz2
-			cd -
-		fi
-	elif [ "x${TARGET_CHIP}" = "xrt24" ]; then
-		if [ ! -d "${TOP_DIR}/tools/toolchain/spacemit-toolchain-elf-newlib-x86_64-v1.0.9" ]; then
-			mkdir -p ${TOP_DIR}/tools/toolchain/
-			cd ${TOP_DIR}/tools/toolchain/
-			if [ ! -f "spacemit-toolchain-elf-newlib-x86_64-v1.0.9.tar.xz" ]; then
-				mk_info "Downloading spacemit toolchain..."
-				wget http://archive.spacemit.com/toolchain/spacemit-toolchain-elf-newlib-x86_64-v1.0.9.tar.xz
-				if [ $? -ne 0 ]; then
-					mk_error "Failed to download spacemit toolchain"
-					cd -
-					return 1
-				fi
+		elif [ "x${TARGET_CHIP}" = "xrt24" ]; then
+			local tc_tar="spacemit-toolchain-elf-newlib-x86_64-v1.0.9.tar.xz"
+			if [ ! -d "${tc_dir}/spacemit-toolchain-elf-newlib-x86_64-v1.0.9" ]; then
+				[ -f "${tc_dir}/${tc_tar}" ] || fetch_toolchain "${tc_dir}" "${tc_tar}" || return 1
+				tar -xf "${tc_dir}/${tc_tar}" -C "${tc_dir}" || { mk_error "Failed to extract ${tc_tar}"; return 1; }
 			fi
-			tar -xf spacemit-toolchain-elf-newlib-x86_64-v1.0.9.tar.xz
-			cd -
 		fi
 	fi
 
