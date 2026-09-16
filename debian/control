@@ -1,5 +1,5 @@
 Source: esos-spacemit
-Section: misc
+Section: embedded
 Priority: optional
 Maintainer: liweizhi <weizhi.li@spacemit.com>
 Build-Depends: debhelper-compat (= 13),
