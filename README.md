@@ -108,7 +108,7 @@ dpkg-buildpackage -uc -us -b
 
 4) 安装
 ```
-dpkg -i ../bianbu-esos_*.deb
+dpkg -i ../esos-spacemit_*.deb
 ```
 
 #### 2.2.2 Buildroot 环境

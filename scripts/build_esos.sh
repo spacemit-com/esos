@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-PACKAGE_SRC_NAME="esos"
+PACKAGE_SRC_NAME="esos-spacemit"
 CLEAN_CMD='rm -rf output/esos; rm -f bsp/spacemit/.esos_top.config bsp/spacemit/.esos.config bsp/spacemit/*.itb bsp/spacemit/*.elf bsp/spacemit/*.bin bsp/spacemit/platform/rt24/*.dtb; (cd bsp/spacemit && scons -c >/dev/null 2>&1 || true)'
 BUILD_CMD='TOP_OUTPUT_DIR=$(pwd)/output/esos ./build_top.sh'
 BUILD_DEB_CMD='GIT_VERSION=$(git rev-parse --short HEAD 2>/dev/null); VERSION=$(if [ -n "$GIT_VERSION" ]; then echo "0~g$GIT_VERSION"; else echo "0~$(date +%Y%m%d%H%M%S)"; fi); rm -rf debian/changelog; dch --create --package '"$PACKAGE_SRC_NAME"' -v ${VERSION} --distribution resolute-porting --force-distribution "Bianbu Test"; DEB_BUILD_OPTIONS="nocheck nostrip" dpkg-buildpackage -us -uc -b -ariscv64 -d -j${JOBS:-$(nproc)}'

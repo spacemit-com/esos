@@ -1,4 +1,4 @@
-Source: esos
+Source: esos-spacemit
 Section: misc
 Priority: optional
 Maintainer: liweizhi <weizhi.li@spacemit.com>
@@ -15,7 +15,7 @@ Standards-Version: 4.5.0
 Homepage: https://gitee.com/spacemit-buildroot/esos
 XBS-Commit-Id:
 
-Package: bianbu-esos
+Package: esos-spacemit
 Architecture: any
 Multi-Arch: foreign
 Depends: ${misc:Depends}
