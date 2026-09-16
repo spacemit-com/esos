@@ -24,10 +24,22 @@ running_in_chroot() {
 case "$1" in
 configure)
     target=""
-    if grep -q 'Spacemit(R) X100' /proc/cpuinfo; then
+    # Detect a Spacemit K3 / X100 platform.  Different kernels expose the SoC
+    # identity differently, so accept any of:
+    #   - "Spacemit(R) X100" model string in /proc/cpuinfo (older kernels)
+    #   - "spacemit,x100" uarch line in /proc/cpuinfo (newer kernels)
+    #   - "spacemit,k3" in /proc/device-tree/compatible (device tree)
+    # The last two are substring matches on purpose: board compatibles carry a
+    # board suffix (e.g. "spacemit,k3-deb1") and most K3 boards have no bare
+    # "spacemit,k3" fallback entry.  -a is required because the compatible file
+    # is NUL-separated binary data and grep misses it silently without -a.
+    if grep -q 'Spacemit(R) X100' /proc/cpuinfo \
+        || grep -q 'spacemit,x100' /proc/cpuinfo \
+        || { [ -r /proc/device-tree/compatible ] &&
+             grep -qa 'spacemit,k3' /proc/device-tree/compatible; }; then
         target="spacemit"
     else
-        echo "Running not in Spacemit X100, skipping install esos.itb to bootloader partition."
+        echo "Running not in Spacemit K3/X100, skipping install esos.itb to bootloader partition."
         exit 0
     fi
 
@@ -35,6 +47,11 @@ configure)
         echo "Running in chroot, skipping install esos.itb to bootloader partition."
         exit 0
     fi
+
+    # Make sure mtdblock is loaded.  It is built-in on SpacemiT kernels but
+    # ships as a module on mainline kernels (e.g. Ubuntu), where /dev/mtdblock*
+    # does not exist until the module is loaded.
+    modprobe mtdblock 2>/dev/null || true
 
     BOOT_MODE=""
     for x in $(cat /proc/cmdline); do
@@ -134,8 +151,8 @@ configure)
             TARGET_DEVICE="$BOOT_DEVICE"
             echo "Using boot device from boot_mode=$BOOT_MODE: $TARGET_DEVICE"
         else
-            echo "Unsupported boot_mode=$BOOT_MODE, unable to determine boot device."
-            exit 1
+            echo "Unsupported boot_mode=$BOOT_MODE, unable to determine boot device, skipping."
+            exit 0
         fi
     fi
 
@@ -172,8 +189,8 @@ configure)
         "/dev/mtdblock0")
             # 解析 /proc/mtd 判断分区布局
             if [ ! -f "/proc/mtd" ]; then
-                echo "Error: /proc/mtd not found, cannot determine MTD partition layout"
-                exit 1
+                echo "Error: /proc/mtd not found, cannot determine MTD partition layout, skipping."
+                exit 0
             fi
 
             # 获取 mtd0 的名称
@@ -218,24 +235,31 @@ configure)
             fi
             ;;
         *)
-            echo "Unsupported target device=$TARGET_DEVICE"
-            exit 1
+            echo "Unsupported target device=$TARGET_DEVICE, skipping."
+            exit 0
             ;;
         esac
     else
-        echo "Unable to determine target device (missing root= or boot_mode= in cmdline)"
-        exit 1
+        echo "Unable to determine target device (missing root= or boot_mode= in cmdline), skipping."
+        exit 0
     fi
 
-    # 待检查文件列表
-    files="/usr/lib/riscv64-linux-gnu/esos/esos.itb $ESOS"
-    for file in $files; do
+    # Warn but do not fail: a non-zero exit from a vendor package's postinst
+    # marks the package half-configured and takes the whole apt transaction
+    # (or image build) down with it.
+    for file in /usr/lib/riscv64-linux-gnu/esos/esos.itb "$ESOS"; do
         if [ ! -e "$file" ]; then
-            # 任意不存在则退出
-            echo "Missing $file"
-            exit 1
+            echo "Missing $file, skipping install to bootloader partition."
+            exit 0
         fi
     done
+
+    # The node existing is not enough: a mtdblock device with no backing MTD,
+    # or a stray non-block path, would make the dd below silently useless.
+    if [ ! -b "$ESOS" ]; then
+        echo "Error: $ESOS is not a block device, skipping install to bootloader partition."
+        exit 0
+    fi
 
     # 此前已经做了所有检查
     set -x

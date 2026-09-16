@@ -18,7 +18,7 @@ XBS-Commit-Id:
 Package: esos-spacemit
 Architecture: any
 Multi-Arch: foreign
-Depends: ${misc:Depends}
+Depends: ${misc:Depends},
+         kmod
 Description: ESOS(Energy Service OS) for SpacemiT platforms
  ESOS is a real-time operating system designed for SpacemiT platforms.
-
