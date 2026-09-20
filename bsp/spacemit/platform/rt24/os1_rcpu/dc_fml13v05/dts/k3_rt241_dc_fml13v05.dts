@@ -33,7 +33,7 @@
 
 &uart0 {
 	pinctrl-names = "default";
-	pinctrl-0 = <&ruart0_3_cfg>;
+	pinctrl-0 = <&ruart0_2_cfg>;
 	status = "okay";
 	reg = <0xc0881000 0x100>;
 	interrupts = <0 17 0>;
