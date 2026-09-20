@@ -5,15 +5,478 @@
 	#address-cells = <2>;
 
 	images {
+		rcpu-data-null {
+			description = "Using data interaction with AP";
+			type = "standalone";
+			os = "esos";
+			arch = "riscv";
+			compression = "lzo";
+			load = <0x1 0xd00000>;
+			entry = <0x1 0xd00000>;
+			data = /incbin/("../output/esos/null.spacemit.lzo");
+			hash {
+				algo = "sha256";
+			};
+		};
+
+		rcpu0-dtb-com260 {
+			description = "ESOS Core0 Com260 dtb";
+			type = "standalone";
+			os = "esos";
+			arch = "riscv";
+			compression = "lzo";
+			load = <0x1 0xd01000>;
+			entry = <0x1 0xd01000>;
+			data = /incbin/("../output/esos/k3_rt240_com260.dtb.lzo");
+			hash {
+				algo = "sha256";
+			};
+		};
+
+		rcpu1-dtb-com260 {
+			description = "ESOS Core1 Com260 dtb";
+			type = "standalone";
+			os = "esos";
+			arch = "riscv";
+			compression = "lzo";
+			load = <0x1 0xd0D800>;
+			entry = <0x1 0xd0D800>;
+			data = /incbin/("../output/esos/k3_rt241_com260.dtb.lzo");
+			hash {
+				algo = "sha256";
+			};
+		};
+
+		rcpu0-dtb-deb1 {
+			description = "ESOS Core0 Deb1 dtb";
+			type = "standalone";
+			os = "esos";
+			arch = "riscv";
+			compression = "lzo";
+			load = <0x1 0xd01000>;
+			entry = <0x1 0xd01000>;
+			data = /incbin/("../output/esos/k3_rt240_deb1.dtb.lzo");
+			hash {
+				algo = "sha256";
+			};
+		};
+
+		rcpu1-dtb-deb1 {
+			description = "ESOS Core1 Deb1 dtb";
+			type = "standalone";
+			os = "esos";
+			arch = "riscv";
+			compression = "lzo";
+			load = <0x1 0xd0D800>;
+			entry = <0x1 0xd0D800>;
+			data = /incbin/("../output/esos/k3_rt241_deb1.dtb.lzo");
+			hash {
+				algo = "sha256";
+			};
+		};
+
+		rcpu0-dtb-evb {
+			description = "ESOS Core0 Evb dtb";
+			type = "standalone";
+			os = "esos";
+			arch = "riscv";
+			compression = "lzo";
+			load = <0x1 0xd01000>;
+			entry = <0x1 0xd01000>;
+			data = /incbin/("../output/esos/k3_rt240_evb.dtb.lzo");
+			hash {
+				algo = "sha256";
+			};
+		};
+
+		rcpu1-dtb-evb {
+			description = "ESOS Core1 Evb dtb";
+			type = "standalone";
+			os = "esos";
+			arch = "riscv";
+			compression = "lzo";
+			load = <0x1 0xd0D800>;
+			entry = <0x1 0xd0D800>;
+			data = /incbin/("../output/esos/k3_rt241_evb.dtb.lzo");
+			hash {
+				algo = "sha256";
+			};
+		};
+
+		rcpu0-dtb-evb2_1 {
+			description = "ESOS Core0 Evb2_1 dtb";
+			type = "standalone";
+			os = "esos";
+			arch = "riscv";
+			compression = "lzo";
+			load = <0x1 0xd01000>;
+			entry = <0x1 0xd01000>;
+			data = /incbin/("../output/esos/k3_rt240_evb2_1.dtb.lzo");
+			hash {
+				algo = "sha256";
+			};
+		};
+
+		rcpu1-dtb-evb2_1 {
+			description = "ESOS Core1 Evb2_1 dtb";
+			type = "standalone";
+			os = "esos";
+			arch = "riscv";
+			compression = "lzo";
+			load = <0x1 0xd0D800>;
+			entry = <0x1 0xd0D800>;
+			data = /incbin/("../output/esos/k3_rt241_evb2_1.dtb.lzo");
+			hash {
+				algo = "sha256";
+			};
+		};
+
+		rcpu0-dtb-evb2_2 {
+			description = "ESOS Core0 Evb2_2 dtb";
+			type = "standalone";
+			os = "esos";
+			arch = "riscv";
+			compression = "lzo";
+			load = <0x1 0xd01000>;
+			entry = <0x1 0xd01000>;
+			data = /incbin/("../output/esos/k3_rt240_evb2_2.dtb.lzo");
+			hash {
+				algo = "sha256";
+			};
+		};
+
+		rcpu1-dtb-evb2_2 {
+			description = "ESOS Core1 Evb2_2 dtb";
+			type = "standalone";
+			os = "esos";
+			arch = "riscv";
+			compression = "lzo";
+			load = <0x1 0xd0D800>;
+			entry = <0x1 0xd0D800>;
+			data = /incbin/("../output/esos/k3_rt241_evb2_2.dtb.lzo");
+			hash {
+				algo = "sha256";
+			};
+		};
+
+		rcpu0-dtb-dc-fml13v05 {
+			description = "ESOS Core0 dc_fml13v05 dtb";
+			type = "standalone";
+			os = "esos";
+			arch = "riscv";
+			compression = "lzo";
+			load = <0x1 0xd01000>;
+			entry = <0x1 0xd01000>;
+			data = /incbin/("../output/esos/k3_rt240_dc_fml13v05.dtb.lzo");
+			hash {
+				algo = "sha256";
+			};
+		};
+
+		rcpu1-dtb-dc-fml13v05 {
+			description = "ESOS Core1 dc_fml13v05 dtb";
+			type = "standalone";
+			os = "esos";
+			arch = "riscv";
+			compression = "lzo";
+			load = <0x1 0xd0D800>;
+			entry = <0x1 0xd0D800>;
+			data = /incbin/("../output/esos/k3_rt241_dc_fml13v05.dtb.lzo");
+			hash {
+				algo = "sha256";
+			};
+		};
+
+		rcpu0-dtb-com260-kit-v02 {
+			description = "ESOS Core0 com260_kit_v02 dtb";
+			type = "standalone";
+			os = "esos";
+			arch = "riscv";
+			compression = "lzo";
+			load = <0x1 0xd01000>;
+			entry = <0x1 0xd01000>;
+			data = /incbin/("../output/esos/k3_rt240_com260_kit_v02.dtb.lzo");
+			hash {
+				algo = "sha256";
+			};
+		};
+
+		rcpu1-dtb-com260-kit-v02 {
+			description = "ESOS Core1 com260_kit_v02 dtb";
+			type = "standalone";
+			os = "esos";
+			arch = "riscv";
+			compression = "lzo";
+			load = <0x1 0xd0D800>;
+			entry = <0x1 0xd0D800>;
+			data = /incbin/("../output/esos/k3_rt241_com260_kit_v02.dtb.lzo");
+			hash {
+				algo = "sha256";
+			};
+		};
+
+		rcpu0-dtb-gemini-c0 {
+			description = "ESOS Core0 gemini_c0 dtb";
+			type = "standalone";
+			os = "esos";
+			arch = "riscv";
+			compression = "lzo";
+			load = <0x1 0xd01000>;
+			entry = <0x1 0xd01000>;
+			data = /incbin/("../output/esos/k3_rt240_gemini_c0.dtb.lzo");
+			hash {
+				algo = "sha256";
+			};
+		};
+
+		rcpu1-dtb-gemini-c0 {
+			description = "ESOS Core1 gemini_c1 dtb";
+			type = "standalone";
+			os = "esos";
+			arch = "riscv";
+			compression = "lzo";
+			load = <0x1 0xd0D800>;
+			entry = <0x1 0xd0D800>;
+			data = /incbin/("../output/esos/k3_rt241_gemini_c0.dtb.lzo");
+			hash {
+				algo = "sha256";
+			};
+		};
+
+		rcpu0-dtb-gemini-c1 {
+			description = "ESOS Core0 gemini_c1 dtb";
+			type = "standalone";
+			os = "esos";
+			arch = "riscv";
+			compression = "lzo";
+			load = <0x1 0xd01000>;
+			entry = <0x1 0xd01000>;
+			data = /incbin/("../output/esos/k3_rt240_gemini_c1.dtb.lzo");
+			hash {
+				algo = "sha256";
+			};
+		};
+
+		rcpu1-dtb-gemini-c1 {
+			description = "ESOS Core1 gemini_c1 dtb";
+			type = "standalone";
+			os = "esos";
+			arch = "riscv";
+			compression = "lzo";
+			load = <0x1 0xd0D800>;
+			entry = <0x1 0xd0D800>;
+			data = /incbin/("../output/esos/k3_rt241_gemini_c1.dtb.lzo");
+			hash {
+				algo = "sha256";
+			};
+		};
+
+		rcpu0-dtb-pico-itx {
+			description = "ESOS Core0 Pico ITX dtb";
+			type = "standalone";
+			os = "esos";
+			arch = "riscv";
+			compression = "lzo";
+			load = <0x1 0xd01000>;
+			entry = <0x1 0xd01000>;
+			data = /incbin/("../output/esos/k3_rt240_pico_itx.dtb.lzo");
+			hash {
+				algo = "sha256";
+			};
+		};
+
+		rcpu1-dtb-pico-itx {
+			description = "ESOS Core1 Pico ITX dtb";
+			type = "standalone";
+			os = "esos";
+			arch = "riscv";
+			compression = "lzo";
+			load = <0x1 0xd0D800>;
+			entry = <0x1 0xd0D800>;
+			data = /incbin/("../output/esos/k3_rt241_pico_itx.dtb.lzo");
+			hash {
+				algo = "sha256";
+			};
+		};
+
+		rcpu0-dtb-BS01DCMA {
+			description = "ESOS Core0 BS01DCMA dtb";
+			type = "standalone";
+			os = "esos";
+			arch = "riscv";
+			compression = "lzo";
+			load = <0x1 0xd01000>;
+			entry = <0x1 0xd01000>;
+			data = /incbin/("../output/esos/k3_rt240_BS01DCMA.dtb.lzo");
+			hash {
+				algo = "sha256";
+			};
+		};
+
+		rcpu1-dtb-BS01DCMA {
+			description = "ESOS Core1 BS01DCMA dtb";
+			type = "standalone";
+			os = "esos";
+			arch = "riscv";
+			compression = "lzo";
+			load = <0x1 0xd0D800>;
+			entry = <0x1 0xd0D800>;
+			data = /incbin/("../output/esos/k3_rt241_BS01DCMA.dtb.lzo");
+			hash {
+				algo = "sha256";
+			};
+		};
+
+		rcpu0-dtb-com260_ifx {
+			description = "ESOS Core0 Com260 IFX dtb";
+			type = "standalone";
+			os = "esos";
+			arch = "riscv";
+			compression = "lzo";
+			load = <0x1 0xd01000>;
+			entry = <0x1 0xd01000>;
+			data = /incbin/("../output/esos/k3_rt240_com260_ifx.dtb.lzo");
+			hash {
+				algo = "sha256";
+			};
+		};
+
+		rcpu1-dtb-com260_ifx {
+			description = "ESOS Core1 Com260 IFX dtb";
+			type = "standalone";
+			os = "esos";
+			arch = "riscv";
+			compression = "lzo";
+			load = <0x1 0xd0D800>;
+			entry = <0x1 0xd0D800>;
+			data = /incbin/("../output/esos/k3_rt241_com260_ifx.dtb.lzo");
+			hash {
+				algo = "sha256";
+			};
+		};
+
+		rcpu0-dtb-com260_tq {
+			description = "ESOS Core0 COM260 TQ dtb";
+			type = "standalone";
+			os = "esos";
+			arch = "riscv";
+			compression = "lzo";
+			load = <0x1 0xd01000>;
+			entry = <0x1 0xd01000>;
+			data = /incbin/("../output/esos/k3_rt240_com260_tq.dtb.lzo");
+			hash {
+				algo = "sha256";
+			};
+		};
+
+		rcpu1-dtb-com260_tq {
+			description = "ESOS Core1 COM260 TQ dtb";
+			type = "standalone";
+			os = "esos";
+			arch = "riscv";
+			compression = "lzo";
+			load = <0x1 0xd0D800>;
+			entry = <0x1 0xd0D800>;
+			data = /incbin/("../output/esos/k3_rt241_com260_tq.dtb.lzo");
+			hash {
+				algo = "sha256";
+			};
+		};
+
+		rcpu0-dtb-com260_ifx2 {
+			description = "ESOS Core0 COM260 ifx2 dtb";
+			type = "standalone";
+			os = "esos";
+			arch = "riscv";
+			compression = "lzo";
+			load = <0x1 0xd01000>;
+			entry = <0x1 0xd01000>;
+			data = /incbin/("../output/esos/k3_rt240_com260_ifx2.dtb.lzo");
+			hash {
+				algo = "sha256";
+			};
+		};
+
+		rcpu1-dtb-com260_ifx2 {
+			description = "ESOS Core1 COM260 ifx2 dtb";
+			type = "standalone";
+			os = "esos";
+			arch = "riscv";
+			compression = "lzo";
+			load = <0x1 0xd0D800>;
+			entry = <0x1 0xd0D800>;
+			data = /incbin/("../output/esos/k3_rt241_com260_ifx2.dtb.lzo");
+			hash {
+				algo = "sha256";
+			};
+		};
+
+		rcpu0-dtb-com260_ifx_tq {
+			description = "ESOS Core0 COM260 ifx TQ dtb";
+			type = "standalone";
+			os = "esos";
+			arch = "riscv";
+			compression = "lzo";
+			load = <0x1 0xd01000>;
+			entry = <0x1 0xd01000>;
+			data = /incbin/("../output/esos/k3_rt240_com260_ifx_tq.dtb.lzo");
+			hash {
+				algo = "sha256";
+			};
+		};
+
+		rcpu1-dtb-com260_ifx_tq {
+			description = "ESOS Core1 COM260 ifx TQ dtb";
+			type = "standalone";
+			os = "esos";
+			arch = "riscv";
+			compression = "lzo";
+			load = <0x1 0xd0D800>;
+			entry = <0x1 0xd0D800>;
+			data = /incbin/("../output/esos/k3_rt241_com260_ifx_tq.dtb.lzo");
+			hash {
+				algo = "sha256";
+			};
+		};
+
+		rcpu0-dtb-aibox-k3 {
+			description = "ESOS Core0 AIBOX-K3 dtb";
+			type = "standalone";
+			os = "esos";
+			arch = "riscv";
+			compression = "lzo";
+			load = <0x1 0xd01000>;
+			entry = <0x1 0xd01000>;
+			data = /incbin/("../output/esos/k3_rt240_firefly_aibox_k3.dtb.lzo");
+			hash {
+				algo = "sha256";
+			};
+		};
+
+		rcpu1-dtb-aibox-k3 {
+			description = "ESOS Core1 AIBOX-K3 dtb";
+			type = "standalone";
+			os = "esos";
+			arch = "riscv";
+			compression = "lzo";
+			load = <0x1 0xd0D800>;
+			entry = <0x1 0xd0D800>;
+			data = /incbin/("../output/esos/k3_rt241_firefly_aibox_k3.dtb.lzo");
+			hash {
+				algo = "sha256";
+			};
+		};
+
 		rcpu0-fw {
 			description = "ESOS Core0";
 			type = "standalone";
 			os = "esos";
 			arch = "riscv";
-			compression = "none";
+			compression = "lzo";
 			load = <0x1 0x200000>;
 			entry = <0x1 0x200000>;
-			data = /incbin/("../output/esos/rt24_os0_rcpu.elf");
+
+			data = /incbin/("../output/esos/rt24_os0_rcpu.elf.lzo");
 			hash {
 				algo = "sha256";
 			};
@@ -24,21 +487,173 @@
 			type = "standalone";
 			os = "esos";
 			arch = "riscv";
-			compression = "none";
-			load = <0x1 0x804000>;
-			entry = <0x1 0x804000>;
-			data = /incbin/("../output/esos/rt24_os1_rcpu.elf");
+			compression = "lzo";
+			load = <0x1 0x800000>;
+			entry = <0x1 0x800000>;
+
+			data = /incbin/("../output/esos/rt24_os1_rcpu.elf.lzo");
 			hash {
 				algo = "sha256";
 			};
 		};
+
 	};
 
 	configurations {
-		default = "conf_dual";
-		conf_dual {
-			description = "ESOS Dual Core Configuration";
-			loadables = "rcpu0-fw", "rcpu1-fw";
+		default = "conf_dual_1";
+		conf_dual_1 {
+			description = "k3_deb1";
+			loadables = "rcpu-data-null", "rcpu0-dtb-deb1", "rcpu1-dtb-deb1", "rcpu0-fw", "rcpu1-fw";
+			signature-1 {
+				algo = "sha256,rsa2048";
+				key-name-hint = "uboot_key_prv";
+				sign-images = "loadables";
+			};
+		};
+
+		conf_dual_2 {
+			description = "k3_evb";
+			loadables = "rcpu-data-null", "rcpu0-dtb-evb", "rcpu1-dtb-evb", "rcpu0-fw", "rcpu1-fw";
+			signature-1 {
+				algo = "sha256,rsa2048";
+				key-name-hint = "uboot_key_prv";
+				sign-images = "loadables";
+			};
+		};
+
+		conf_dual_3 {
+			description = "k3_com260";
+			loadables = "rcpu-data-null", "rcpu0-dtb-com260", "rcpu1-dtb-com260", "rcpu0-fw", "rcpu1-fw";
+			signature-1 {
+				algo = "sha256,rsa2048";
+				key-name-hint = "uboot_key_prv";
+				sign-images = "loadables";
+			};
+		};
+
+		conf_dual_4 {
+			description = "k3-deepcomputing-fml13v05";
+			loadables = "rcpu-data-null", "rcpu0-dtb-dc-fml13v05", "rcpu1-dtb-dc-fml13v05", "rcpu0-fw", "rcpu1-fw";
+			signature-1 {
+				algo = "sha256,rsa2048";
+				key-name-hint = "uboot_key_prv";
+				sign-images = "loadables";
+			};
+		};
+
+		conf_dual_5 {
+			description = "k3_com260_kit_v02";
+			loadables = "rcpu-data-null", "rcpu0-dtb-com260-kit-v02", "rcpu1-dtb-com260-kit-v02", "rcpu0-fw", "rcpu1-fw";
+			signature-1 {
+				algo = "sha256,rsa2048";
+				key-name-hint = "uboot_key_prv";
+				sign-images = "loadables";
+			};
+		};
+
+		conf_dual_6 {
+			description = "k3_gemini_c0";
+			loadables = "rcpu-data-null", "rcpu0-dtb-gemini-c0", "rcpu1-dtb-gemini-c0", "rcpu0-fw", "rcpu1-fw";
+			signature-1 {
+				algo = "sha256,rsa2048";
+				key-name-hint = "uboot_key_prv";
+				sign-images = "loadables";
+			};
+		};
+
+		conf_dual_7 {
+			description = "k3_gemini_c1";
+			loadables = "rcpu-data-null", "rcpu0-dtb-gemini-c1", "rcpu1-dtb-gemini-c1", "rcpu0-fw", "rcpu1-fw";
+			signature-1 {
+				algo = "sha256,rsa2048";
+				key-name-hint = "uboot_key_prv";
+				sign-images = "loadables";
+			};
+		};
+
+		conf_dual_8 {
+			description = "k3_evb2-1";
+			loadables = "rcpu-data-null", "rcpu0-dtb-evb2_1", "rcpu1-dtb-evb2_1", "rcpu0-fw", "rcpu1-fw";
+			signature-1 {
+				algo = "sha256,rsa2048";
+				key-name-hint = "uboot_key_prv";
+				sign-images = "loadables";
+			};
+		};
+
+		conf_dual_9 {
+			description = "k3_evb2-2";
+			loadables = "rcpu-data-null", "rcpu0-dtb-evb2_2", "rcpu1-dtb-evb2_2", "rcpu0-fw", "rcpu1-fw";
+			signature-1 {
+				algo = "sha256,rsa2048";
+				key-name-hint = "uboot_key_prv";
+				sign-images = "loadables";
+			};
+		};
+
+		conf_dual_10 {
+			description = "k3-pico-itx";
+			loadables = "rcpu-data-null", "rcpu0-dtb-pico-itx", "rcpu1-dtb-pico-itx", "rcpu0-fw", "rcpu1-fw";
+			signature-1 {
+				algo = "sha256,rsa2048";
+				key-name-hint = "uboot_key_prv";
+				sign-images = "loadables";
+			};
+		};
+
+		conf_dual_11 {
+			description = "k3_BS01DCMA";
+			loadables = "rcpu-data-null", "rcpu0-dtb-BS01DCMA", "rcpu1-dtb-BS01DCMA", "rcpu0-fw", "rcpu1-fw";
+			signature-1 {
+				algo = "sha256,rsa2048";
+				key-name-hint = "uboot_key_prv";
+				sign-images = "loadables";
+			};
+		};
+
+		conf_dual_12 {
+			description = "k3_com260_ifx";
+			loadables = "rcpu-data-null", "rcpu0-dtb-com260_ifx", "rcpu1-dtb-com260_ifx", "rcpu0-fw", "rcpu1-fw";
+			signature-1 {
+				algo = "sha256,rsa2048";
+				key-name-hint = "uboot_key_prv";
+				sign-images = "loadables";
+			};
+		};
+
+		conf_dual_13 {
+			description = "k3_com260_tq";
+			loadables = "rcpu-data-null", "rcpu0-dtb-com260_tq", "rcpu1-dtb-com260_tq", "rcpu0-fw", "rcpu1-fw";
+			signature-1 {
+				algo = "sha256,rsa2048";
+				key-name-hint = "uboot_key_prv";
+				sign-images = "loadables";
+			};
+		};
+
+		conf_dual_14 {
+			description = "k3_com260_ifx2";
+			loadables = "rcpu-data-null", "rcpu0-dtb-com260_ifx2", "rcpu1-dtb-com260_ifx2", "rcpu0-fw", "rcpu1-fw";
+			signature-1 {
+				algo = "sha256,rsa2048";
+				key-name-hint = "uboot_key_prv";
+				sign-images = "loadables";
+			};
+		};
+
+		conf_dual_15 {
+			description = "k3_com260_ifx_tq";
+			loadables = "rcpu-data-null", "rcpu0-dtb-com260_ifx_tq", "rcpu1-dtb-com260_ifx_tq", "rcpu0-fw", "rcpu1-fw";
+			signature-1 {
+				algo = "sha256,rsa2048";
+				key-name-hint = "uboot_key_prv";
+				sign-images = "loadables";
+			};
+		};
+
+		conf_dual_16 {
+			description = "k3-firefly-aibox-k3";
+			loadables = "rcpu-data-null", "rcpu0-dtb-aibox-k3", "rcpu1-dtb-aibox-k3", "rcpu0-fw", "rcpu1-fw";
 			signature-1 {
 				algo = "sha256,rsa2048";
 				key-name-hint = "uboot_key_prv";
