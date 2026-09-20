@@ -64,6 +64,13 @@ setup_volume_mounts() {
     # Initialize with basic mounts
     VOLUME_MOUNTS=("-v" "$project_dir:/workspace" "-w" "$container_base")
 
+    # config KEY_DIR mount
+    if [ -n "$KEY_DIR" ]; then
+        KEY_ABS_DIR="$(cd "$KEY_DIR" && pwd)"
+        KEY_DIR="/workspace/keys"
+        VOLUME_MOUNTS+=("-v" "${KEY_ABS_DIR}:${KEY_DIR}")
+    fi
+
     # Handle git directory if exists
     if [ -e "$git_path" ]; then
         local actual_git_dir
@@ -204,7 +211,7 @@ if [ -z "$DEBFULLNAME" ]; then
     fi
 fi
 
-CONTAINER_ENV=("-e" "ARCH=riscv" "-e" "CROSS_COMPILE=$CROSS_COMPILE" "-e" "PATH=$TOOLCHAIN_PATH:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" "-e" "DEBEMAIL=$DEBEMAIL" "-e" "DEBFULLNAME=$DEBFULLNAME")
+CONTAINER_ENV=("-e" "ARCH=riscv" "-e" "CROSS_COMPILE=$CROSS_COMPILE" "-e" "PATH=$TOOLCHAIN_PATH:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" "-e" "DEBEMAIL=$DEBEMAIL" "-e" "DEBFULLNAME=$DEBFULLNAME" "-e" "KEY_DIR=$KEY_DIR")
 if [[ -n "$JOBS" ]]; then
     CONTAINER_ENV+=("-e" "JOBS=$JOBS")
 fi
