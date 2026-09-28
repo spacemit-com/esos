@@ -149,7 +149,7 @@ static enum rpmi_error spacemit_set_config(void *priv, rpmi_uint32_t domain_id, 
 	if (!ret)
 		ret = RPMI_SUCCESS;
 	else
-		ret = RPMI_ERR_INVALID_PARAM;
+		ret = RPMI_ERR_FAILED;
 
 	return ret;
 }
@@ -157,6 +157,8 @@ static enum rpmi_error spacemit_set_config(void *priv, rpmi_uint32_t domain_id, 
 static enum rpmi_error spacemit_get_config(void *priv, rpmi_uint32_t domain_id, enum rpmi_voltage_state *state)
 {
 	struct rt_regulator *reg = regulator_ptr[domain_id];
+	if (!reg)
+		return RPMI_ERR_INVALID_PARAM;
 	if (rt_regulator_is_enabled(reg))
 		*state = RPMI_VOLTAGE_STATE_ENABLED;
 	else

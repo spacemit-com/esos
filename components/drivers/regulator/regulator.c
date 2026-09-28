@@ -284,7 +284,16 @@ static rt_err_t regulator_disable(struct rt_regulator_node *reg_np)
 {
     rt_err_t err = RT_EOK;
 
-    if (--reg_np->enabled_count == 0)
+    if (reg_np->enabled_count)
+    {
+        reg_np->enabled_count--;
+    }
+    else if (reg_np->ops->is_enabled && !reg_np->ops->is_enabled(reg_np))
+    {
+        return RT_EOK;
+    }
+
+    if (reg_np->enabled_count == 0)
     {
         if (reg_np->ops->disable)
         {

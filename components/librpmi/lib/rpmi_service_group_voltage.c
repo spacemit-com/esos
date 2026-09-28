@@ -144,6 +144,21 @@ static enum rpmi_error rpmi_voltage_get_level(struct rpmi_voltage_group *voltage
 	return ret;
 }
 
+static enum rpmi_voltage_state
+rpmi_voltage_read_state(struct rpmi_voltage_group *voltagegrp,
+			struct rpmi_voltage *voltage)
+{
+	enum rpmi_voltage_state state;
+
+	if (!voltagegrp->ops || !voltagegrp->ops->get_config)
+		return voltage->current_state;
+
+	if (voltagegrp->ops->get_config(voltagegrp->ops_priv, voltage->id, &state))
+		return voltage->current_state;
+
+	return state;
+}
+
 static enum rpmi_error __rpmi_voltage_set_state(struct rpmi_voltage_group *voltagegrp,
 					      struct rpmi_voltage *voltage,
 					      enum rpmi_voltage_state state)
@@ -152,6 +167,8 @@ static enum rpmi_error __rpmi_voltage_set_state(struct rpmi_voltage_group *volta
 	struct rpmi_dlist *pos;
 
 	rpmi_env_lock(voltage->lock);
+
+	voltage->current_state = rpmi_voltage_read_state(voltagegrp, voltage);
 	/**
 	 * To disable a voltage domain:
 	 * - Must not be disabled already if its a leaf or independent voltage domain.
@@ -230,14 +247,6 @@ static enum rpmi_error __rpmi_voltage_set_state(struct rpmi_voltage_group *volta
 
 		voltage->current_state = state;
 		goto done;
-
-		ret = voltagegrp->ops->set_config(voltagegrp->ops_priv, voltage->id, state);
-		if (ret) {
-			rpmi_env_unlock(voltage->lock);
-			return ret;
-		}
-
-		voltage->current_state = state;
 	}
 
 done:
@@ -270,6 +279,7 @@ static enum rpmi_error rpmi_voltage_get_state(struct rpmi_voltage_group *voltage
 
 	rpmi_env_lock(voltage->lock);
 
+	voltage->current_state = rpmi_voltage_read_state(voltagegrp, voltage);
 	*state = voltage->current_state;
 
 	rpmi_env_unlock(voltage->lock);
