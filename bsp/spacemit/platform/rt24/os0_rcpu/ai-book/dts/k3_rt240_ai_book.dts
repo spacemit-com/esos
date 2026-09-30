@@ -189,7 +189,7 @@
 	edcdc1: edcdc1 {
 		bind_driver = "ri2c2";
 		slave_addr = <0x75>;
-		compatible = "regulator-mp2973-1";
+		compatible = "regulator-mp2973";
 		regulator-name = "edcdc1";
 		regulator-min-microvolt = <534000>;
 		regulator-max-microvolt = <1000000>;
