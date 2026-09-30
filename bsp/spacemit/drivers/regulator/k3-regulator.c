@@ -40,6 +40,12 @@ static struct regulator_linear_range au4562_buck_ranges[] = {
 	[0] = REGULATOR_LINEAR_RANGE(540000, 0x6c, 0xdc, 5000),
 };
 
+/* MP2973: the AP-visible window; min must be the voltage at min_sel, and
+ * sel 4 (530000) is never programmed, so it starts at sel 5 (540000). */
+static struct regulator_linear_range mp2973_buck_ranges[] = {
+	[0] = REGULATOR_LINEAR_RANGE(540000, 5, 51, 10000),
+};
+
 static const struct regulator_desc p1_regulator_descs[]  = {
 	REGULATOR_DESC_COMMON(P1_ID_DCDC1_2,
 			255, P1_BUCK1_VSEL_REG, P1_BUCK_VSEL_MASK,
@@ -175,6 +181,15 @@ static const struct regulator_desc au4562_regulator_descs[]  = {
 			au4562_buck_ranges),
 };
 
+static const struct regulator_desc mp2973_regulator_descs[]  = {
+	/* leaf */
+	REGULATOR_DESC_COMMON(EXTERN_LEAF_X100,
+			4096, MP2973_BUCK1_VOLT_REG, MP2973_BUCK1_VSEL_MSK,
+			0, 0,
+			0, 0,
+			mp2973_buck_ranges),
+};
+
 static struct dtb_compatible_array __compatible[] = {
 	{ .compatible = "p1-regulator", .data = (void *)p1_regulator_descs },
 	{}
@@ -188,6 +203,7 @@ static struct dtb_compatible_array __dcdc_compatible[] = {
 	{ .compatible = "regulator-is6615a-2", .data = (void *)is6615a_regulator_descs },
 	{ .compatible = "regulator-au4562-1", .data = (void *)au4562_regulator_descs },
 	{ .compatible = "regulator-au4562-2", .data = (void *)au4562_regulator_descs },
+	{ .compatible = "regulator-mp2973", .data = (void *)mp2973_regulator_descs },
 };
 
 #define PMIC_TYPE_MASK			0x7
@@ -546,6 +562,149 @@ static rt_err_t regulator_independ_disable(struct rt_regulator_node *reg)
 	return 0;
 }
 
+/* MP2973: rail = page + 1; encoding mirrors U-Boot (keep in sync) */
+static int mp2973_page_select(struct spacemit_regulator *sr, rt_uint8_t page)
+{
+	rt_uint8_t buf[2] = { MP2973_PAGE_REG, page };
+	struct rt_i2c_msg msg;
+
+	msg.addr  = sr->slave_addr;
+	msg.flags = RT_I2C_WR;
+	msg.buf   = buf;
+	msg.len   = 2;
+
+	if (rt_i2c_transfer(sr->handle_driver, &msg, 1) != 1) {
+		rt_kprintf("%s:%d, mp2973 page %d select failed\n", __func__, __LINE__, page);
+		return -RT_ERROR;
+	}
+
+	return 0;
+}
+
+static int mp2973_read_reg(struct spacemit_regulator *sr, rt_uint8_t reg, rt_uint8_t *buf, int len)
+{
+	struct rt_i2c_msg msgs[2];
+
+	msgs[0].addr  = sr->slave_addr;
+	msgs[0].flags = RT_I2C_WR;
+	msgs[0].buf   = &reg;
+	msgs[0].len   = 1;
+	msgs[1].addr  = sr->slave_addr;
+	msgs[1].flags = RT_I2C_RD;
+	msgs[1].buf   = buf;
+	msgs[1].len   = len;
+
+	if (rt_i2c_transfer(sr->handle_driver, msgs, 2) != 2) {
+		rt_kprintf("%s:%d, mp2973: read 0x%x failed\n", __func__, __LINE__, reg);
+		return -RT_ERROR;
+	}
+
+	return 0;
+}
+
+static int mp2973_write_reg(struct spacemit_regulator *sr, rt_uint8_t reg, rt_uint8_t *buf, int len)
+{
+	rt_uint8_t tmp[3];
+	struct rt_i2c_msg msg;
+
+	if (len > 2)
+		return -RT_EINVAL;
+
+	tmp[0] = reg;
+	rt_memcpy(&tmp[1], buf, len);
+
+	msg.addr  = sr->slave_addr;
+	msg.flags = RT_I2C_WR;
+	msg.buf   = tmp;
+	msg.len   = len + 1;
+
+	if (rt_i2c_transfer(sr->handle_driver, &msg, 1) != 1) {
+		rt_kprintf("%s:%d, mp2973: write 0x%x failed\n", __func__, __LINE__, reg);
+		return -RT_ERROR;
+	}
+
+	return 0;
+}
+
+/* MP2973_RAIL's VOUT encoding: 0 = DIRECT (1mV/LSB) | 1 = LINEAR16 | 2 = VID.
+ * Leaves the page at MP2973_RAIL. */
+static int mp2973_enc_read(struct spacemit_regulator *sr, int *mode,
+			   int *vref_mv, int *step_mv, int *exp)
+{
+	rt_uint8_t val[2] = { 0, 0 };
+	rt_uint16_t reso, cfg;
+	int rail1 = (MP2973_RAIL == MP2973_PAGE_RAIL1);
+	rt_uint8_t fmt_direct = rail1 ? MP2973_VOUT_FORMAT_DIRECT_R1 :
+					MP2973_VOUT_FORMAT_DIRECT_R2;
+	rt_uint8_t fmt_linear = rail1 ? MP2973_VOUT_FORMAT_LINEAR_R1 :
+					MP2973_VOUT_FORMAT_LINEAR_R2;
+	rt_uint8_t step_bit = rail1 ? MP2973_VID_STEP_SEL_R1 :
+				      MP2973_VID_STEP_SEL_R2;
+	rt_uint8_t cfg_reg = rail1 ? MP2973_MFR_VR_MULTI_CONFIG_R1 :
+				     MP2973_MFR_VR_MULTI_CONFIG_R2;
+
+	*mode = 2;
+	*vref_mv = 49;
+	*step_mv = 10;
+	*exp = -9;
+
+	if (mp2973_page_select(sr, MP2973_RAIL) ||
+	    mp2973_read_reg(sr, MP2973_MFR_RESO_SET, val, 2))
+		return -RT_ERROR;
+
+	reso = val[0] | ((rt_uint16_t)val[1] << 8);
+
+	if (reso & fmt_direct) {
+		*mode = 0;
+	} else if (reso & fmt_linear) {
+		*mode = 1;
+		if (mp2973_page_select(sr, MP2973_RAIL) ||
+		    mp2973_read_reg(sr, MP2973_VOUT_MODE_REG, val, 1))
+			return -RT_ERROR;
+		*exp = val[0] & 0x1f;
+		if (*exp & 0x10)
+			*exp -= 0x20;
+	} else {
+		if (mp2973_page_select(sr, MP2973_CONFIG_PAGE) ||
+		    mp2973_read_reg(sr, cfg_reg, val, 2))
+			return -RT_ERROR;
+		cfg = val[0] | ((rt_uint16_t)val[1] << 8);
+		if (cfg & step_bit)
+			*step_mv = 5;
+	}
+
+	return mp2973_page_select(sr, MP2973_RAIL);
+}
+
+static int mp2973_code_max(int mode)
+{
+	if (mode == 0)			/* DIRECT: 16-bit code */
+		return 0xffff;
+
+	if (mode == 1)			/* LINEAR16 */
+		return MP2973_LINEAR16_CODE_MAX;
+
+	return MP2973_VOUT_CODE_MAX;	/* VID */
+}
+
+/* mirrors U-Boot mp2973_decode() */
+static int mp2973_decode_uv(int mode, int vref_mv, int step_mv, int exp, rt_uint16_t code)
+{
+	if (mode == 0)			/* DIRECT: 1mV/LSB */
+		return (int)code * 1000;
+
+	if (mode == 1) {		/* LINEAR16: LSB = 2^exp V */
+		if (exp >= 0 || exp < -19) {
+			rt_kprintf("%s:%d, mp2973: bad exp %d\n", __func__, __LINE__, exp);
+			return -RT_EINVAL;
+		}
+		return (int)(((rt_uint64_t)(code & MP2973_LINEAR16_CODE_MAX) * 1000000) >> (-exp));
+	}
+
+	/* VID: uV = (vref + code) * step */
+	return (vref_mv + (int)(code & MP2973_VOUT_CODE_MAX)) * step_mv * 1000;
+}
+
 static int regulator_independ_get_voltage(struct rt_regulator_node *reg)
 {
 	int index, sel, ret;
@@ -576,6 +735,31 @@ static int regulator_independ_get_voltage(struct rt_regulator_node *reg)
 			rt_kprintf("%s:%d, transfer error\n", __func__, __LINE__);
 			return -RT_ERROR;
 		}
+	}
+
+	if (sr->priv_data == (void *)mp2973_regulator_descs) {
+		int mode, vref_mv, step_mv, exp;
+		rt_uint8_t buf[2] = { 0, 0 };
+		rt_uint16_t code;
+
+		/* only the X100 leaf is implemented */
+		if (index != EXTERN_LEAF_X100) {
+			rt_kprintf("%s:%d, mp2973: leaf %d not implemented (only %d)\n",
+				   __func__, __LINE__, index, EXTERN_LEAF_X100);
+			return -RT_EINVAL;
+		}
+
+		if (mp2973_enc_read(sr, &mode, &vref_mv, &step_mv, &exp)) {
+			rt_kprintf("%s:%d, mp2973: format read failed\n", __func__, __LINE__);
+			return -RT_ERROR;
+		}
+
+		if (mp2973_read_reg(sr, MP2973_BUCK1_VOLT_REG, buf, 2))
+			return -RT_ERROR;
+
+		code = buf[0] | ((rt_uint16_t)buf[1] << 8);
+
+		return mp2973_decode_uv(mode, vref_mv, step_mv, exp, code);
 	}
 
 	msgs[0].addr  = sr->slave_addr;
@@ -633,6 +817,112 @@ static rt_err_t regulator_independ_set_voltage(struct rt_regulator_node *reg, in
 			rt_kprintf("%s:%d, transfer error\n", __func__, __LINE__);
 			return -RT_ERROR;
 		}
+	}
+
+	if (sr->priv_data == (void *)mp2973_regulator_descs) {
+		int mode, vref_mv, step_mv, exp, code, got;
+		rt_uint16_t back, mask;
+		rt_uint8_t buf[2];
+
+		/* only the X100 leaf is implemented */
+		if (index != EXTERN_LEAF_X100) {
+			rt_kprintf("%s:%d, mp2973: leaf %d not implemented (only %d)\n",
+				   __func__, __LINE__, index, EXTERN_LEAF_X100);
+			return -RT_EINVAL;
+		}
+		/* rail window from DTS; 0 = no bound, mirrors U-Boot mp2973_set_vout() */
+		if ((reg->param->max_uvolt && min_uvolt > reg->param->max_uvolt) ||
+		    (reg->param->min_uvolt && min_uvolt < reg->param->min_uvolt)) {
+			rt_kprintf("%s:%d, mp2973: %d uV outside rail window %d-%d uV\n",
+				   __func__, __LINE__, min_uvolt,
+				   reg->param->min_uvolt, reg->param->max_uvolt);
+			return -RT_EINVAL;
+		}
+
+		if (mp2973_enc_read(sr, &mode, &vref_mv, &step_mv, &exp)) {
+			rt_kprintf("%s:%d, mp2973: format read failed\n", __func__, __LINE__);
+			return -RT_ERROR;
+		}
+
+		if (mode == 0) {		/* DIRECT: 1mV/LSB */
+			code = min_uvolt / 1000;
+		} else if (mode == 1) {		/* LINEAR16: LSB = 2^exp V */
+			if (exp >= 0 || exp < -19) {
+				rt_kprintf("%s:%d, mp2973: bad exp %d\n", __func__, __LINE__, exp);
+				return -RT_EINVAL;
+			}
+			code = (int)(((rt_uint64_t)min_uvolt * (1u << -exp) + 500000) / 1000000);
+			if (code > MP2973_LINEAR16_CODE_MAX) {
+				rt_kprintf("%s:%d, mp2973: %d uV out of range\n",
+					   __func__, __LINE__, min_uvolt);
+				return -RT_EINVAL;
+			}
+		} else {			/* VID: code = round(mV/step) - vref */
+			code = (min_uvolt / 1000 + step_mv / 2) / step_mv - vref_mv;
+			if (code < MP2973_VOUT_CODE_MIN || code > MP2973_VOUT_CODE_MAX) {
+				rt_kprintf("%s:%d, mp2973: %d mV out of VID range\n",
+					   __func__, __LINE__, min_uvolt / 1000);
+				return -RT_EINVAL;
+			}
+		}
+
+		/* encode() rounds to the step grid: re-check the window on the written code */
+		if (reg->param->min_uvolt || reg->param->max_uvolt) {
+			got = mp2973_decode_uv(mode, vref_mv, step_mv, exp, code);
+
+			if (reg->param->min_uvolt && got < reg->param->min_uvolt)
+				code++;
+			else if (reg->param->max_uvolt && got > reg->param->max_uvolt)
+				code--;
+
+			if (code > mp2973_code_max(mode)) {
+				rt_kprintf("%s:%d, mp2973: no code inside window %d-%d uV\n",
+					   __func__, __LINE__,
+					   reg->param->min_uvolt, reg->param->max_uvolt);
+				return -RT_EINVAL;
+			}
+
+			got = mp2973_decode_uv(mode, vref_mv, step_mv, exp, code);
+			if ((reg->param->min_uvolt && got < reg->param->min_uvolt) ||
+			    (reg->param->max_uvolt && got > reg->param->max_uvolt)) {
+				rt_kprintf("%s:%d, mp2973: %d uV lands on %d uV, out of window %d-%d uV\n",
+					   __func__, __LINE__, min_uvolt, got,
+					   reg->param->min_uvolt, reg->param->max_uvolt);
+				return -RT_EINVAL;
+			}
+		}
+
+		/* Shared PAGE register: select the rail on every access (the probe may have
+		 * left the page elsewhere). U-Boot's cross-rail snapshot is not needed:
+		 * ops are serialised by reg_np->mutex, and rail2 has no power stage here. */
+		if (mp2973_page_select(sr, MP2973_RAIL)) {
+			rt_kprintf("%s:%d, mp2973: page select failed\n", __func__, __LINE__);
+			return -RT_ERROR;
+		}
+
+		buf[0] = code & 0xff;
+		buf[1] = (code >> 8) & 0xff;
+		if (mp2973_write_reg(sr, MP2973_BUCK1_VOLT_REG, buf, 2)) {
+			rt_kprintf("%s:%d, mp2973: write VOUT_COMMAND failed\n",
+				   __func__, __LINE__);
+			return -RT_ERROR;
+		}
+
+		buf[0] = buf[1] = 0;
+		if (mp2973_read_reg(sr, MP2973_BUCK1_VOLT_REG, buf, 2)) {
+			rt_kprintf("%s:%d, mp2973: read back VOUT_COMMAND failed\n",
+				   __func__, __LINE__);
+			return -RT_ERROR;
+		}
+		back = buf[0] | ((rt_uint16_t)buf[1] << 8);
+		mask = (rt_uint16_t)mp2973_code_max(mode);
+		if ((back & mask) != ((rt_uint16_t)code & mask)) {
+			rt_kprintf("%s:%d, mp2973: VOUT_COMMAND readback 0x%x != 0x%x\n",
+				   __func__, __LINE__, back & mask, (rt_uint16_t)code & mask);
+			return -RT_ERROR;
+		}
+
+		return RT_EOK;
 	}
 
 	sel = regulator_map_voltage_linear_range(&desc[index], min_uvolt, max_uvolt);

@@ -91,6 +91,35 @@
 #define AU4562_BUCK1_VOLT_REG		0x21
 #define AU4562_BUCK1_VSEL_MSK		0xfff
 
+/* MPS MP2973GQK @0x75 (U41): VOUT_COMMAND(0x21) is a 9-bit VID code, not linear
+ * (code = round(mV/step) - vref, vref 49); rail = page + 1, see MP2973_RAIL. */
+#define MP2973_PAGE_REG			0x00
+#define MP2973_PAGE_RAIL1		0
+#define MP2973_PAGE_RAIL2		1
+#define MP2973_CONFIG_PAGE		2
+#define MP2973_MFR_RESO_SET		0xc7
+#define MP2973_VOUT_MODE_REG		0x20
+#define MP2973_VOUT_FORMAT_DIRECT_R1	(1 << 7)
+#define MP2973_VOUT_FORMAT_LINEAR_R1	(1 << 6)
+#define MP2973_VOUT_FORMAT_DIRECT_R2	(1 << 4)
+#define MP2973_VOUT_FORMAT_LINEAR_R2	(1 << 3)
+#define MP2973_MFR_VR_MULTI_CONFIG_R1	0x0d
+#define MP2973_MFR_VR_MULTI_CONFIG_R2	0x1d
+#define MP2973_IMVP9_EN_R2		(1 << 13)	/* spec: Reserved, fixed 0 */
+#define MP2973_VID_STEP_SEL_R1		(1 << 4)
+#define MP2973_VID_STEP_SEL_R2		(1 << 3)
+#define MP2973_VOUT_CODE_MIN		1
+#define MP2973_VOUT_CODE_MAX		0x1ff
+#define MP2973_LINEAR16_CODE_MAX	0xfff
+
+/* rail in use (page0 = rail1); a differently wired board overrides this */
+#ifndef MP2973_RAIL
+#define MP2973_RAIL			MP2973_PAGE_RAIL1
+#endif
+
+#define MP2973_BUCK1_VOLT_REG	0x21
+#define MP2973_BUCK1_VSEL_MSK	0x1ff	/* 9-bit VID code */
+
 struct regulator_linear_range {
 	unsigned int min;
 	unsigned int min_sel;
@@ -136,6 +165,11 @@ enum k3_regulator_index {
 	EXTERN_LEAF_A100,
 	EXTERN_LEAF_X100,
 };
+
+/* index comes from the DTS 'index' property, not the alias sequence number.
+ * ai-book edcdc1 has index=23 = EXTERN_LEAF_X100. */
+_Static_assert(EXTERN_LEAF_X100 == 23 && EXTERN_LEAF_A100 == 22,
+	       "leaf index changed: re-check every board's 'index' property in DTS");
 
 struct spacemit_regulator;
 
