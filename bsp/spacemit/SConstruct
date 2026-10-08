@@ -34,5 +34,9 @@ AlwaysBuild(objs)
 # prepare building environment
 objs += PrepareBuilding(env, RTT_ROOT, has_libcpu=False)
 
+# register the debug sidecar emitted by POST_ACTION so `scons -c` removes it,
+# otherwise a stale .debug survives a clean and gets packaged against new code
+Clean(TARGET, TARGET + '.debug')
+
 # make a building
 DoBuilding(TARGET, objs)

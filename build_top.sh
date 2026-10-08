@@ -428,6 +428,12 @@ function build_kernel()
 
 			# copy the elf
 			cp ${TOP_TARGET_CHIP}_${TOP_TARGET_BOARD}.elf ${TOP_OUTPUT_DIR}
+			# copy the debug sidecar produced by the POST_ACTION (see rtconfig.py)
+			cp -f ${TOP_TARGET_CHIP}_${TOP_TARGET_BOARD}.elf.debug ${TOP_OUTPUT_DIR}
+			# esos-lite (suspend/resume image) already ships unstripped; keep its symbols too
+			if [ -f ${TOP_BSP_DIR}/binary/esos_lite-rt24.elf ]; then
+				cp -f ${TOP_BSP_DIR}/binary/esos_lite-rt24.elf ${TOP_OUTPUT_DIR}/esos_lite-rt24.elf.debug
+			fi
 
 			# clean kernel
 			scons -c

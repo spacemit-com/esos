@@ -5,3 +5,4 @@
 mydtb
 platform/version_id_gen.cc
 rtconfig.h
+*.elf.debug

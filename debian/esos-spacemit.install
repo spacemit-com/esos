@@ -1,3 +1,6 @@
 output/esos/esos.itb /usr/lib/riscv64-linux-gnu/esos/
 output/esos/rt24_os0_rcpu.elf /usr/lib/riscv64-linux-gnu/esos/
 output/esos/rt24_os1_rcpu.elf /usr/lib/riscv64-linux-gnu/esos/
+output/esos/rt24_os0_rcpu.elf.debug /usr/lib/riscv64-linux-gnu/esos/
+output/esos/rt24_os1_rcpu.elf.debug /usr/lib/riscv64-linux-gnu/esos/
+output/esos/esos_lite-rt24.elf.debug /usr/lib/riscv64-linux-gnu/esos/

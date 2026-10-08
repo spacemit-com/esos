@@ -2,6 +2,7 @@
 *.map
 *.dblite
 *.elf
+*.elf.debug
 *.bin
 *.hex
 *.axf

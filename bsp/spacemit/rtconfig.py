@@ -61,7 +61,7 @@ if CPU == 'n308':
         CXXFLAGS = CFLAGS
 
         DUMP_ACTION = OBJDUMP + ' -D -S $TARGET > rtt.asm\n'
-        POST_ACTION = OBJCPY + ' -O binary $TARGET rtthread.bin\n' + SIZE + ' $TARGET \n' + STRIP + ' $TARGET\n'
+        POST_ACTION = OBJCPY + ' -O binary $TARGET rtthread.bin\n' + SIZE + ' $TARGET \n' + 'cp -f $TARGET ${TARGET}.debug\n' + STRIP + ' $TARGET\n'
 
 else:
     if os.getenv('RTT_EXEC_PATH') is None:
@@ -100,4 +100,4 @@ else:
         CXXFLAGS = CFLAGS
 
         DUMP_ACTION = OBJDUMP + ' -D -S $TARGET > rtt.asm\n'
-        POST_ACTION = OBJCPY + ' -O binary $TARGET rtthread.bin\n' + SIZE + ' $TARGET \n' + STRIP + ' $TARGET\n'
+        POST_ACTION = OBJCPY + ' -O binary $TARGET rtthread.bin\n' + SIZE + ' $TARGET \n' + 'cp -f $TARGET ${TARGET}.debug\n' + STRIP + ' $TARGET\n'

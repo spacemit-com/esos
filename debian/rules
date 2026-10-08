@@ -85,3 +85,13 @@ override_dh_makeshlibs:
 override_dh_shlibdeps:
 	# The .elf payloads are static bare-metal images with no shared-lib deps;
 	# skip scanning so dh does not need a riscv64-linux-gnu-objdump.
+
+override_dh_strip:
+	# ESOS payloads are raw-incbin'd into a signed FIT; bytes must not change.
+	# The .elf.debug sidecars must keep their symbols.
+	# (build_esos.sh already sets DEB_BUILD_OPTIONS=nostrip; this override is
+	# defence-in-depth against direct dpkg-buildpackage invocations.)
+
+override_dh_dwz:
+	# dwz 0.13 does not support gcc-14 DWARF-5 (.debug_line_str) in
+	# riscv64-unknown-elf bare-metal ELFs; skip to avoid exit 25.
